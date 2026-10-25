@@ -1,0 +1,66 @@
+
+# =========================
+# Godot 4.x
+# =========================
+.godot/
+.import/
+.nomedia
+*.translation
+*.tmp
+
+# =========================
+# Export configuration
+# =========================
+export.cfg
+export_credentials.cfg
+
+# =========================
+# Build / Export outputs
+# =========================
+/build/
+/builds/
+/dist/
+/exports/
+
+# =========================
+# C# / Mono (if applicable)
+# =========================
+.mono/
+data_*/
+mono_crash.*.json
+~*.dll
+
+# =========================
+# IDE / Editor
+# =========================
+.idea/
+.vscode/
+.vs/
+*.suo
+*.user
+*.swp
+*.swo
+
+# =========================
+# Operating system
+# =========================
+.DS_Store
+Thumbs.db
+Desktop.ini
+*~
+
+# =========================
+# Local save / debug files
+# Only if stored inside project
+# =========================
+/saves/
+/save_data/
+/logs/
+*.log
+
+# =========================
+# Temporary / Backup files
+# =========================
+*.bak
+*.backup
+*.temp

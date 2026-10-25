@@ -1,0 +1,5111 @@
+{
+ "char_alchemist": {
+  "anims": {
+   "attack_down": {
+    "count": 4,
+    "fps": 12,
+    "loop": false,
+    "row": 2
+   },
+   "attack_side": {
+    "count": 4,
+    "fps": 12,
+    "loop": false,
+    "row": 16
+   },
+   "attack_up": {
+    "count": 4,
+    "fps": 12,
+    "loop": false,
+    "row": 9
+   },
+   "cast_down": {
+    "count": 4,
+    "fps": 8,
+    "loop": false,
+    "row": 3
+   },
+   "cast_side": {
+    "count": 4,
+    "fps": 8,
+    "loop": false,
+    "row": 17
+   },
+   "cast_up": {
+    "count": 4,
+    "fps": 8,
+    "loop": false,
+    "row": 10
+   },
+   "dash_down": {
+    "count": 3,
+    "fps": 12,
+    "loop": false,
+    "row": 4
+   },
+   "dash_side": {
+    "count": 3,
+    "fps": 12,
+    "loop": false,
+    "row": 18
+   },
+   "dash_up": {
+    "count": 3,
+    "fps": 12,
+    "loop": false,
+    "row": 11
+   },
+   "death_down": {
+    "count": 6,
+    "fps": 8,
+    "loop": false,
+    "row": 6
+   },
+   "death_side": {
+    "count": 6,
+    "fps": 8,
+    "loop": false,
+    "row": 20
+   },
+   "death_up": {
+    "count": 6,
+    "fps": 8,
+    "loop": false,
+    "row": 13
+   },
+   "hurt_down": {
+    "count": 2,
+    "fps": 8,
+    "loop": false,
+    "row": 5
+   },
+   "hurt_side": {
+    "count": 2,
+    "fps": 8,
+    "loop": false,
+    "row": 19
+   },
+   "hurt_up": {
+    "count": 2,
+    "fps": 8,
+    "loop": false,
+    "row": 12
+   },
+   "idle_down": {
+    "count": 4,
+    "fps": 5,
+    "loop": true,
+    "row": 0
+   },
+   "idle_side": {
+    "count": 4,
+    "fps": 5,
+    "loop": true,
+    "row": 14
+   },
+   "idle_up": {
+    "count": 4,
+    "fps": 5,
+    "loop": true,
+    "row": 7
+   },
+   "walk_down": {
+    "count": 6,
+    "fps": 10,
+    "loop": true,
+    "row": 1
+   },
+   "walk_side": {
+    "count": 6,
+    "fps": 10,
+    "loop": true,
+    "row": 15
+   },
+   "walk_up": {
+    "count": 6,
+    "fps": 10,
+    "loop": true,
+    "row": 8
+   }
+  },
+  "dirs": true,
+  "frame_h": 32,
+  "frame_w": 32,
+  "path": "res://assets/sprites/characters/alchemist.png"
+ },
+ "char_architect": {
+  "anims": {
+   "attack_down": {
+    "count": 4,
+    "fps": 12,
+    "loop": false,
+    "row": 2
+   },
+   "attack_side": {
+    "count": 4,
+    "fps": 12,
+    "loop": false,
+    "row": 16
+   },
+   "attack_up": {
+    "count": 4,
+    "fps": 12,
+    "loop": false,
+    "row": 9
+   },
+   "cast_down": {
+    "count": 4,
+    "fps": 8,
+    "loop": false,
+    "row": 3
+   },
+   "cast_side": {
+    "count": 4,
+    "fps": 8,
+    "loop": false,
+    "row": 17
+   },
+   "cast_up": {
+    "count": 4,
+    "fps": 8,
+    "loop": false,
+    "row": 10
+   },
+   "dash_down": {
+    "count": 3,
+    "fps": 12,
+    "loop": false,
+    "row": 4
+   },
+   "dash_side": {
+    "count": 3,
+    "fps": 12,
+    "loop": false,
+    "row": 18
+   },
+   "dash_up": {
+    "count": 3,
+    "fps": 12,
+    "loop": false,
+    "row": 11
+   },
+   "death_down": {
+    "count": 6,
+    "fps": 8,
+    "loop": false,
+    "row": 6
+   },
+   "death_side": {
+    "count": 6,
+    "fps": 8,
+    "loop": false,
+    "row": 20
+   },
+   "death_up": {
+    "count": 6,
+    "fps": 8,
+    "loop": false,
+    "row": 13
+   },
+   "hurt_down": {
+    "count": 2,
+    "fps": 8,
+    "loop": false,
+    "row": 5
+   },
+   "hurt_side": {
+    "count": 2,
+    "fps": 8,
+    "loop": false,
+    "row": 19
+   },
+   "hurt_up": {
+    "count": 2,
+    "fps": 8,
+    "loop": false,
+    "row": 12
+   },
+   "idle_down": {
+    "count": 4,
+    "fps": 5,
+    "loop": true,
+    "row": 0
+   },
+   "idle_side": {
+    "count": 4,
+    "fps": 5,
+    "loop": true,
+    "row": 14
+   },
+   "idle_up": {
+    "count": 4,
+    "fps": 5,
+    "loop": true,
+    "row": 7
+   },
+   "walk_down": {
+    "count": 6,
+    "fps": 10,
+    "loop": true,
+    "row": 1
+   },
+   "walk_side": {
+    "count": 6,
+    "fps": 10,
+    "loop": true,
+    "row": 15
+   },
+   "walk_up": {
+    "count": 6,
+    "fps": 10,
+    "loop": true,
+    "row": 8
+   }
+  },
+  "dirs": true,
+  "frame_h": 32,
+  "frame_w": 32,
+  "path": "res://assets/sprites/characters/architect.png"
+ },
+ "char_assassin": {
+  "anims": {
+   "attack_down": {
+    "count": 4,
+    "fps": 12,
+    "loop": false,
+    "row": 2
+   },
+   "attack_side": {
+    "count": 4,
+    "fps": 12,
+    "loop": false,
+    "row": 16
+   },
+   "attack_up": {
+    "count": 4,
+    "fps": 12,
+    "loop": false,
+    "row": 9
+   },
+   "cast_down": {
+    "count": 4,
+    "fps": 8,
+    "loop": false,
+    "row": 3
+   },
+   "cast_side": {
+    "count": 4,
+    "fps": 8,
+    "loop": false,
+    "row": 17
+   },
+   "cast_up": {
+    "count": 4,
+    "fps": 8,
+    "loop": false,
+    "row": 10
+   },
+   "dash_down": {
+    "count": 3,
+    "fps": 12,
+    "loop": false,
+    "row": 4
+   },
+   "dash_side": {
+    "count": 3,
+    "fps": 12,
+    "loop": false,
+    "row": 18
+   },
+   "dash_up": {
+    "count": 3,
+    "fps": 12,
+    "loop": false,
+    "row": 11
+   },
+   "death_down": {
+    "count": 6,
+    "fps": 8,
+    "loop": false,
+    "row": 6
+   },
+   "death_side": {
+    "count": 6,
+    "fps": 8,
+    "loop": false,
+    "row": 20
+   },
+   "death_up": {
+    "count": 6,
+    "fps": 8,
+    "loop": false,
+    "row": 13
+   },
+   "hurt_down": {
+    "count": 2,
+    "fps": 8,
+    "loop": false,
+    "row": 5
+   },
+   "hurt_side": {
+    "count": 2,
+    "fps": 8,
+    "loop": false,
+    "row": 19
+   },
+   "hurt_up": {
+    "count": 2,
+    "fps": 8,
+    "loop": false,
+    "row": 12
+   },
+   "idle_down": {
+    "count": 4,
+    "fps": 5,
+    "loop": true,
+    "row": 0
+   },
+   "idle_side": {
+    "count": 4,
+    "fps": 5,
+    "loop": true,
+    "row": 14
+   },
+   "idle_up": {
+    "count": 4,
+    "fps": 5,
+    "loop": true,
+    "row": 7
+   },
+   "walk_down": {
+    "count": 6,
+    "fps": 10,
+    "loop": true,
+    "row": 1
+   },
+   "walk_side": {
+    "count": 6,
+    "fps": 10,
+    "loop": true,
+    "row": 15
+   },
+   "walk_up": {
+    "count": 6,
+    "fps": 10,
+    "loop": true,
+    "row": 8
+   }
+  },
+  "dirs": true,
+  "frame_h": 32,
+  "frame_w": 32,
+  "path": "res://assets/sprites/characters/assassin.png"
+ },
+ "char_collector": {
+  "anims": {
+   "attack_down": {
+    "count": 4,
+    "fps": 12,
+    "loop": false,
+    "row": 2
+   },
+   "attack_side": {
+    "count": 4,
+    "fps": 12,
+    "loop": false,
+    "row": 16
+   },
+   "attack_up": {
+    "count": 4,
+    "fps": 12,
+    "loop": false,
+    "row": 9
+   },
+   "cast_down": {
+    "count": 4,
+    "fps": 8,
+    "loop": false,
+    "row": 3
+   },
+   "cast_side": {
+    "count": 4,
+    "fps": 8,
+    "loop": false,
+    "row": 17
+   },
+   "cast_up": {
+    "count": 4,
+    "fps": 8,
+    "loop": false,
+    "row": 10
+   },
+   "dash_down": {
+    "count": 3,
+    "fps": 12,
+    "loop": false,
+    "row": 4
+   },
+   "dash_side": {
+    "count": 3,
+    "fps": 12,
+    "loop": false,
+    "row": 18
+   },
+   "dash_up": {
+    "count": 3,
+    "fps": 12,
+    "loop": false,
+    "row": 11
+   },
+   "death_down": {
+    "count": 6,
+    "fps": 8,
+    "loop": false,
+    "row": 6
+   },
+   "death_side": {
+    "count": 6,
+    "fps": 8,
+    "loop": false,
+    "row": 20
+   },
+   "death_up": {
+    "count": 6,
+    "fps": 8,
+    "loop": false,
+    "row": 13
+   },
+   "hurt_down": {
+    "count": 2,
+    "fps": 8,
+    "loop": false,
+    "row": 5
+   },
+   "hurt_side": {
+    "count": 2,
+    "fps": 8,
+    "loop": false,
+    "row": 19
+   },
+   "hurt_up": {
+    "count": 2,
+    "fps": 8,
+    "loop": false,
+    "row": 12
+   },
+   "idle_down": {
+    "count": 4,
+    "fps": 5,
+    "loop": true,
+    "row": 0
+   },
+   "idle_side": {
+    "count": 4,
+    "fps": 5,
+    "loop": true,
+    "row": 14
+   },
+   "idle_up": {
+    "count": 4,
+    "fps": 5,
+    "loop": true,
+    "row": 7
+   },
+   "walk_down": {
+    "count": 6,
+    "fps": 10,
+    "loop": true,
+    "row": 1
+   },
+   "walk_side": {
+    "count": 6,
+    "fps": 10,
+    "loop": true,
+    "row": 15
+   },
+   "walk_up": {
+    "count": 6,
+    "fps": 10,
+    "loop": true,
+    "row": 8
+   }
+  },
+  "dirs": true,
+  "frame_h": 32,
+  "frame_w": 32,
+  "path": "res://assets/sprites/characters/collector.png"
+ },
+ "char_cook": {
+  "anims": {
+   "attack_down": {
+    "count": 4,
+    "fps": 12,
+    "loop": false,
+    "row": 2
+   },
+   "attack_side": {
+    "count": 4,
+    "fps": 12,
+    "loop": false,
+    "row": 16
+   },
+   "attack_up": {
+    "count": 4,
+    "fps": 12,
+    "loop": false,
+    "row": 9
+   },
+   "cast_down": {
+    "count": 4,
+    "fps": 8,
+    "loop": false,
+    "row": 3
+   },
+   "cast_side": {
+    "count": 4,
+    "fps": 8,
+    "loop": false,
+    "row": 17
+   },
+   "cast_up": {
+    "count": 4,
+    "fps": 8,
+    "loop": false,
+    "row": 10
+   },
+   "dash_down": {
+    "count": 3,
+    "fps": 12,
+    "loop": false,
+    "row": 4
+   },
+   "dash_side": {
+    "count": 3,
+    "fps": 12,
+    "loop": false,
+    "row": 18
+   },
+   "dash_up": {
+    "count": 3,
+    "fps": 12,
+    "loop": false,
+    "row": 11
+   },
+   "death_down": {
+    "count": 6,
+    "fps": 8,
+    "loop": false,
+    "row": 6
+   },
+   "death_side": {
+    "count": 6,
+    "fps": 8,
+    "loop": false,
+    "row": 20
+   },
+   "death_up": {
+    "count": 6,
+    "fps": 8,
+    "loop": false,
+    "row": 13
+   },
+   "hurt_down": {
+    "count": 2,
+    "fps": 8,
+    "loop": false,
+    "row": 5
+   },
+   "hurt_side": {
+    "count": 2,
+    "fps": 8,
+    "loop": false,
+    "row": 19
+   },
+   "hurt_up": {
+    "count": 2,
+    "fps": 8,
+    "loop": false,
+    "row": 12
+   },
+   "idle_down": {
+    "count": 4,
+    "fps": 5,
+    "loop": true,
+    "row": 0
+   },
+   "idle_side": {
+    "count": 4,
+    "fps": 5,
+    "loop": true,
+    "row": 14
+   },
+   "idle_up": {
+    "count": 4,
+    "fps": 5,
+    "loop": true,
+    "row": 7
+   },
+   "walk_down": {
+    "count": 6,
+    "fps": 10,
+    "loop": true,
+    "row": 1
+   },
+   "walk_side": {
+    "count": 6,
+    "fps": 10,
+    "loop": true,
+    "row": 15
+   },
+   "walk_up": {
+    "count": 6,
+    "fps": 10,
+    "loop": true,
+    "row": 8
+   }
+  },
+  "dirs": true,
+  "frame_h": 32,
+  "frame_w": 32,
+  "path": "res://assets/sprites/characters/cook.png"
+ },
+ "char_guard": {
+  "anims": {
+   "attack_down": {
+    "count": 4,
+    "fps": 12,
+    "loop": false,
+    "row": 2
+   },
+   "attack_side": {
+    "count": 4,
+    "fps": 12,
+    "loop": false,
+    "row": 16
+   },
+   "attack_up": {
+    "count": 4,
+    "fps": 12,
+    "loop": false,
+    "row": 9
+   },
+   "cast_down": {
+    "count": 4,
+    "fps": 8,
+    "loop": false,
+    "row": 3
+   },
+   "cast_side": {
+    "count": 4,
+    "fps": 8,
+    "loop": false,
+    "row": 17
+   },
+   "cast_up": {
+    "count": 4,
+    "fps": 8,
+    "loop": false,
+    "row": 10
+   },
+   "dash_down": {
+    "count": 3,
+    "fps": 12,
+    "loop": false,
+    "row": 4
+   },
+   "dash_side": {
+    "count": 3,
+    "fps": 12,
+    "loop": false,
+    "row": 18
+   },
+   "dash_up": {
+    "count": 3,
+    "fps": 12,
+    "loop": false,
+    "row": 11
+   },
+   "death_down": {
+    "count": 6,
+    "fps": 8,
+    "loop": false,
+    "row": 6
+   },
+   "death_side": {
+    "count": 6,
+    "fps": 8,
+    "loop": false,
+    "row": 20
+   },
+   "death_up": {
+    "count": 6,
+    "fps": 8,
+    "loop": false,
+    "row": 13
+   },
+   "hurt_down": {
+    "count": 2,
+    "fps": 8,
+    "loop": false,
+    "row": 5
+   },
+   "hurt_side": {
+    "count": 2,
+    "fps": 8,
+    "loop": false,
+    "row": 19
+   },
+   "hurt_up": {
+    "count": 2,
+    "fps": 8,
+    "loop": false,
+    "row": 12
+   },
+   "idle_down": {
+    "count": 4,
+    "fps": 5,
+    "loop": true,
+    "row": 0
+   },
+   "idle_side": {
+    "count": 4,
+    "fps": 5,
+    "loop": true,
+    "row": 14
+   },
+   "idle_up": {
+    "count": 4,
+    "fps": 5,
+    "loop": true,
+    "row": 7
+   },
+   "walk_down": {
+    "count": 6,
+    "fps": 10,
+    "loop": true,
+    "row": 1
+   },
+   "walk_side": {
+    "count": 6,
+    "fps": 10,
+    "loop": true,
+    "row": 15
+   },
+   "walk_up": {
+    "count": 6,
+    "fps": 10,
+    "loop": true,
+    "row": 8
+   }
+  },
+  "dirs": true,
+  "frame_h": 32,
+  "frame_w": 32,
+  "path": "res://assets/sprites/characters/guard.png"
+ },
+ "char_guildmaster": {
+  "anims": {
+   "attack_down": {
+    "count": 4,
+    "fps": 12,
+    "loop": false,
+    "row": 2
+   },
+   "attack_side": {
+    "count": 4,
+    "fps": 12,
+    "loop": false,
+    "row": 16
+   },
+   "attack_up": {
+    "count": 4,
+    "fps": 12,
+    "loop": false,
+    "row": 9
+   },
+   "cast_down": {
+    "count": 4,
+    "fps": 8,
+    "loop": false,
+    "row": 3
+   },
+   "cast_side": {
+    "count": 4,
+    "fps": 8,
+    "loop": false,
+    "row": 17
+   },
+   "cast_up": {
+    "count": 4,
+    "fps": 8,
+    "loop": false,
+    "row": 10
+   },
+   "dash_down": {
+    "count": 3,
+    "fps": 12,
+    "loop": false,
+    "row": 4
+   },
+   "dash_side": {
+    "count": 3,
+    "fps": 12,
+    "loop": false,
+    "row": 18
+   },
+   "dash_up": {
+    "count": 3,
+    "fps": 12,
+    "loop": false,
+    "row": 11
+   },
+   "death_down": {
+    "count": 6,
+    "fps": 8,
+    "loop": false,
+    "row": 6
+   },
+   "death_side": {
+    "count": 6,
+    "fps": 8,
+    "loop": false,
+    "row": 20
+   },
+   "death_up": {
+    "count": 6,
+    "fps": 8,
+    "loop": false,
+    "row": 13
+   },
+   "hurt_down": {
+    "count": 2,
+    "fps": 8,
+    "loop": false,
+    "row": 5
+   },
+   "hurt_side": {
+    "count": 2,
+    "fps": 8,
+    "loop": false,
+    "row": 19
+   },
+   "hurt_up": {
+    "count": 2,
+    "fps": 8,
+    "loop": false,
+    "row": 12
+   },
+   "idle_down": {
+    "count": 4,
+    "fps": 5,
+    "loop": true,
+    "row": 0
+   },
+   "idle_side": {
+    "count": 4,
+    "fps": 5,
+    "loop": true,
+    "row": 14
+   },
+   "idle_up": {
+    "count": 4,
+    "fps": 5,
+    "loop": true,
+    "row": 7
+   },
+   "walk_down": {
+    "count": 6,
+    "fps": 10,
+    "loop": true,
+    "row": 1
+   },
+   "walk_side": {
+    "count": 6,
+    "fps": 10,
+    "loop": true,
+    "row": 15
+   },
+   "walk_up": {
+    "count": 6,
+    "fps": 10,
+    "loop": true,
+    "row": 8
+   }
+  },
+  "dirs": true,
+  "frame_h": 32,
+  "frame_w": 32,
+  "path": "res://assets/sprites/characters/guildmaster.png"
+ },
+ "char_mage": {
+  "anims": {
+   "attack_down": {
+    "count": 4,
+    "fps": 12,
+    "loop": false,
+    "row": 2
+   },
+   "attack_side": {
+    "count": 4,
+    "fps": 12,
+    "loop": false,
+    "row": 16
+   },
+   "attack_up": {
+    "count": 4,
+    "fps": 12,
+    "loop": false,
+    "row": 9
+   },
+   "cast_down": {
+    "count": 4,
+    "fps": 8,
+    "loop": false,
+    "row": 3
+   },
+   "cast_side": {
+    "count": 4,
+    "fps": 8,
+    "loop": false,
+    "row": 17
+   },
+   "cast_up": {
+    "count": 4,
+    "fps": 8,
+    "loop": false,
+    "row": 10
+   },
+   "dash_down": {
+    "count": 3,
+    "fps": 12,
+    "loop": false,
+    "row": 4
+   },
+   "dash_side": {
+    "count": 3,
+    "fps": 12,
+    "loop": false,
+    "row": 18
+   },
+   "dash_up": {
+    "count": 3,
+    "fps": 12,
+    "loop": false,
+    "row": 11
+   },
+   "death_down": {
+    "count": 6,
+    "fps": 8,
+    "loop": false,
+    "row": 6
+   },
+   "death_side": {
+    "count": 6,
+    "fps": 8,
+    "loop": false,
+    "row": 20
+   },
+   "death_up": {
+    "count": 6,
+    "fps": 8,
+    "loop": false,
+    "row": 13
+   },
+   "hurt_down": {
+    "count": 2,
+    "fps": 8,
+    "loop": false,
+    "row": 5
+   },
+   "hurt_side": {
+    "count": 2,
+    "fps": 8,
+    "loop": false,
+    "row": 19
+   },
+   "hurt_up": {
+    "count": 2,
+    "fps": 8,
+    "loop": false,
+    "row": 12
+   },
+   "idle_down": {
+    "count": 4,
+    "fps": 5,
+    "loop": true,
+    "row": 0
+   },
+   "idle_side": {
+    "count": 4,
+    "fps": 5,
+    "loop": true,
+    "row": 14
+   },
+   "idle_up": {
+    "count": 4,
+    "fps": 5,
+    "loop": true,
+    "row": 7
+   },
+   "walk_down": {
+    "count": 6,
+    "fps": 10,
+    "loop": true,
+    "row": 1
+   },
+   "walk_side": {
+    "count": 6,
+    "fps": 10,
+    "loop": true,
+    "row": 15
+   },
+   "walk_up": {
+    "count": 6,
+    "fps": 10,
+    "loop": true,
+    "row": 8
+   }
+  },
+  "dirs": true,
+  "frame_h": 32,
+  "frame_w": 32,
+  "path": "res://assets/sprites/characters/mage.png"
+ },
+ "char_merchant": {
+  "anims": {
+   "attack_down": {
+    "count": 4,
+    "fps": 12,
+    "loop": false,
+    "row": 2
+   },
+   "attack_side": {
+    "count": 4,
+    "fps": 12,
+    "loop": false,
+    "row": 16
+   },
+   "attack_up": {
+    "count": 4,
+    "fps": 12,
+    "loop": false,
+    "row": 9
+   },
+   "cast_down": {
+    "count": 4,
+    "fps": 8,
+    "loop": false,
+    "row": 3
+   },
+   "cast_side": {
+    "count": 4,
+    "fps": 8,
+    "loop": false,
+    "row": 17
+   },
+   "cast_up": {
+    "count": 4,
+    "fps": 8,
+    "loop": false,
+    "row": 10
+   },
+   "dash_down": {
+    "count": 3,
+    "fps": 12,
+    "loop": false,
+    "row": 4
+   },
+   "dash_side": {
+    "count": 3,
+    "fps": 12,
+    "loop": false,
+    "row": 18
+   },
+   "dash_up": {
+    "count": 3,
+    "fps": 12,
+    "loop": false,
+    "row": 11
+   },
+   "death_down": {
+    "count": 6,
+    "fps": 8,
+    "loop": false,
+    "row": 6
+   },
+   "death_side": {
+    "count": 6,
+    "fps": 8,
+    "loop": false,
+    "row": 20
+   },
+   "death_up": {
+    "count": 6,
+    "fps": 8,
+    "loop": false,
+    "row": 13
+   },
+   "hurt_down": {
+    "count": 2,
+    "fps": 8,
+    "loop": false,
+    "row": 5
+   },
+   "hurt_side": {
+    "count": 2,
+    "fps": 8,
+    "loop": false,
+    "row": 19
+   },
+   "hurt_up": {
+    "count": 2,
+    "fps": 8,
+    "loop": false,
+    "row": 12
+   },
+   "idle_down": {
+    "count": 4,
+    "fps": 5,
+    "loop": true,
+    "row": 0
+   },
+   "idle_side": {
+    "count": 4,
+    "fps": 5,
+    "loop": true,
+    "row": 14
+   },
+   "idle_up": {
+    "count": 4,
+    "fps": 5,
+    "loop": true,
+    "row": 7
+   },
+   "walk_down": {
+    "count": 6,
+    "fps": 10,
+    "loop": true,
+    "row": 1
+   },
+   "walk_side": {
+    "count": 6,
+    "fps": 10,
+    "loop": true,
+    "row": 15
+   },
+   "walk_up": {
+    "count": 6,
+    "fps": 10,
+    "loop": true,
+    "row": 8
+   }
+  },
+  "dirs": true,
+  "frame_h": 32,
+  "frame_w": 32,
+  "path": "res://assets/sprites/characters/merchant.png"
+ },
+ "char_priest": {
+  "anims": {
+   "attack_down": {
+    "count": 4,
+    "fps": 12,
+    "loop": false,
+    "row": 2
+   },
+   "attack_side": {
+    "count": 4,
+    "fps": 12,
+    "loop": false,
+    "row": 16
+   },
+   "attack_up": {
+    "count": 4,
+    "fps": 12,
+    "loop": false,
+    "row": 9
+   },
+   "cast_down": {
+    "count": 4,
+    "fps": 8,
+    "loop": false,
+    "row": 3
+   },
+   "cast_side": {
+    "count": 4,
+    "fps": 8,
+    "loop": false,
+    "row": 17
+   },
+   "cast_up": {
+    "count": 4,
+    "fps": 8,
+    "loop": false,
+    "row": 10
+   },
+   "dash_down": {
+    "count": 3,
+    "fps": 12,
+    "loop": false,
+    "row": 4
+   },
+   "dash_side": {
+    "count": 3,
+    "fps": 12,
+    "loop": false,
+    "row": 18
+   },
+   "dash_up": {
+    "count": 3,
+    "fps": 12,
+    "loop": false,
+    "row": 11
+   },
+   "death_down": {
+    "count": 6,
+    "fps": 8,
+    "loop": false,
+    "row": 6
+   },
+   "death_side": {
+    "count": 6,
+    "fps": 8,
+    "loop": false,
+    "row": 20
+   },
+   "death_up": {
+    "count": 6,
+    "fps": 8,
+    "loop": false,
+    "row": 13
+   },
+   "hurt_down": {
+    "count": 2,
+    "fps": 8,
+    "loop": false,
+    "row": 5
+   },
+   "hurt_side": {
+    "count": 2,
+    "fps": 8,
+    "loop": false,
+    "row": 19
+   },
+   "hurt_up": {
+    "count": 2,
+    "fps": 8,
+    "loop": false,
+    "row": 12
+   },
+   "idle_down": {
+    "count": 4,
+    "fps": 5,
+    "loop": true,
+    "row": 0
+   },
+   "idle_side": {
+    "count": 4,
+    "fps": 5,
+    "loop": true,
+    "row": 14
+   },
+   "idle_up": {
+    "count": 4,
+    "fps": 5,
+    "loop": true,
+    "row": 7
+   },
+   "walk_down": {
+    "count": 6,
+    "fps": 10,
+    "loop": true,
+    "row": 1
+   },
+   "walk_side": {
+    "count": 6,
+    "fps": 10,
+    "loop": true,
+    "row": 15
+   },
+   "walk_up": {
+    "count": 6,
+    "fps": 10,
+    "loop": true,
+    "row": 8
+   }
+  },
+  "dirs": true,
+  "frame_h": 32,
+  "frame_w": 32,
+  "path": "res://assets/sprites/characters/priest.png"
+ },
+ "char_ranger": {
+  "anims": {
+   "attack_down": {
+    "count": 4,
+    "fps": 12,
+    "loop": false,
+    "row": 2
+   },
+   "attack_side": {
+    "count": 4,
+    "fps": 12,
+    "loop": false,
+    "row": 16
+   },
+   "attack_up": {
+    "count": 4,
+    "fps": 12,
+    "loop": false,
+    "row": 9
+   },
+   "cast_down": {
+    "count": 4,
+    "fps": 8,
+    "loop": false,
+    "row": 3
+   },
+   "cast_side": {
+    "count": 4,
+    "fps": 8,
+    "loop": false,
+    "row": 17
+   },
+   "cast_up": {
+    "count": 4,
+    "fps": 8,
+    "loop": false,
+    "row": 10
+   },
+   "dash_down": {
+    "count": 3,
+    "fps": 12,
+    "loop": false,
+    "row": 4
+   },
+   "dash_side": {
+    "count": 3,
+    "fps": 12,
+    "loop": false,
+    "row": 18
+   },
+   "dash_up": {
+    "count": 3,
+    "fps": 12,
+    "loop": false,
+    "row": 11
+   },
+   "death_down": {
+    "count": 6,
+    "fps": 8,
+    "loop": false,
+    "row": 6
+   },
+   "death_side": {
+    "count": 6,
+    "fps": 8,
+    "loop": false,
+    "row": 20
+   },
+   "death_up": {
+    "count": 6,
+    "fps": 8,
+    "loop": false,
+    "row": 13
+   },
+   "hurt_down": {
+    "count": 2,
+    "fps": 8,
+    "loop": false,
+    "row": 5
+   },
+   "hurt_side": {
+    "count": 2,
+    "fps": 8,
+    "loop": false,
+    "row": 19
+   },
+   "hurt_up": {
+    "count": 2,
+    "fps": 8,
+    "loop": false,
+    "row": 12
+   },
+   "idle_down": {
+    "count": 4,
+    "fps": 5,
+    "loop": true,
+    "row": 0
+   },
+   "idle_side": {
+    "count": 4,
+    "fps": 5,
+    "loop": true,
+    "row": 14
+   },
+   "idle_up": {
+    "count": 4,
+    "fps": 5,
+    "loop": true,
+    "row": 7
+   },
+   "walk_down": {
+    "count": 6,
+    "fps": 10,
+    "loop": true,
+    "row": 1
+   },
+   "walk_side": {
+    "count": 6,
+    "fps": 10,
+    "loop": true,
+    "row": 15
+   },
+   "walk_up": {
+    "count": 6,
+    "fps": 10,
+    "loop": true,
+    "row": 8
+   }
+  },
+  "dirs": true,
+  "frame_h": 32,
+  "frame_w": 32,
+  "path": "res://assets/sprites/characters/ranger.png"
+ },
+ "char_sage": {
+  "anims": {
+   "attack_down": {
+    "count": 4,
+    "fps": 12,
+    "loop": false,
+    "row": 2
+   },
+   "attack_side": {
+    "count": 4,
+    "fps": 12,
+    "loop": false,
+    "row": 16
+   },
+   "attack_up": {
+    "count": 4,
+    "fps": 12,
+    "loop": false,
+    "row": 9
+   },
+   "cast_down": {
+    "count": 4,
+    "fps": 8,
+    "loop": false,
+    "row": 3
+   },
+   "cast_side": {
+    "count": 4,
+    "fps": 8,
+    "loop": false,
+    "row": 17
+   },
+   "cast_up": {
+    "count": 4,
+    "fps": 8,
+    "loop": false,
+    "row": 10
+   },
+   "dash_down": {
+    "count": 3,
+    "fps": 12,
+    "loop": false,
+    "row": 4
+   },
+   "dash_side": {
+    "count": 3,
+    "fps": 12,
+    "loop": false,
+    "row": 18
+   },
+   "dash_up": {
+    "count": 3,
+    "fps": 12,
+    "loop": false,
+    "row": 11
+   },
+   "death_down": {
+    "count": 6,
+    "fps": 8,
+    "loop": false,
+    "row": 6
+   },
+   "death_side": {
+    "count": 6,
+    "fps": 8,
+    "loop": false,
+    "row": 20
+   },
+   "death_up": {
+    "count": 6,
+    "fps": 8,
+    "loop": false,
+    "row": 13
+   },
+   "hurt_down": {
+    "count": 2,
+    "fps": 8,
+    "loop": false,
+    "row": 5
+   },
+   "hurt_side": {
+    "count": 2,
+    "fps": 8,
+    "loop": false,
+    "row": 19
+   },
+   "hurt_up": {
+    "count": 2,
+    "fps": 8,
+    "loop": false,
+    "row": 12
+   },
+   "idle_down": {
+    "count": 4,
+    "fps": 5,
+    "loop": true,
+    "row": 0
+   },
+   "idle_side": {
+    "count": 4,
+    "fps": 5,
+    "loop": true,
+    "row": 14
+   },
+   "idle_up": {
+    "count": 4,
+    "fps": 5,
+    "loop": true,
+    "row": 7
+   },
+   "walk_down": {
+    "count": 6,
+    "fps": 10,
+    "loop": true,
+    "row": 1
+   },
+   "walk_side": {
+    "count": 6,
+    "fps": 10,
+    "loop": true,
+    "row": 15
+   },
+   "walk_up": {
+    "count": 6,
+    "fps": 10,
+    "loop": true,
+    "row": 8
+   }
+  },
+  "dirs": true,
+  "frame_h": 32,
+  "frame_w": 32,
+  "path": "res://assets/sprites/characters/sage.png"
+ },
+ "char_smith": {
+  "anims": {
+   "attack_down": {
+    "count": 4,
+    "fps": 12,
+    "loop": false,
+    "row": 2
+   },
+   "attack_side": {
+    "count": 4,
+    "fps": 12,
+    "loop": false,
+    "row": 16
+   },
+   "attack_up": {
+    "count": 4,
+    "fps": 12,
+    "loop": false,
+    "row": 9
+   },
+   "cast_down": {
+    "count": 4,
+    "fps": 8,
+    "loop": false,
+    "row": 3
+   },
+   "cast_side": {
+    "count": 4,
+    "fps": 8,
+    "loop": false,
+    "row": 17
+   },
+   "cast_up": {
+    "count": 4,
+    "fps": 8,
+    "loop": false,
+    "row": 10
+   },
+   "dash_down": {
+    "count": 3,
+    "fps": 12,
+    "loop": false,
+    "row": 4
+   },
+   "dash_side": {
+    "count": 3,
+    "fps": 12,
+    "loop": false,
+    "row": 18
+   },
+   "dash_up": {
+    "count": 3,
+    "fps": 12,
+    "loop": false,
+    "row": 11
+   },
+   "death_down": {
+    "count": 6,
+    "fps": 8,
+    "loop": false,
+    "row": 6
+   },
+   "death_side": {
+    "count": 6,
+    "fps": 8,
+    "loop": false,
+    "row": 20
+   },
+   "death_up": {
+    "count": 6,
+    "fps": 8,
+    "loop": false,
+    "row": 13
+   },
+   "hurt_down": {
+    "count": 2,
+    "fps": 8,
+    "loop": false,
+    "row": 5
+   },
+   "hurt_side": {
+    "count": 2,
+    "fps": 8,
+    "loop": false,
+    "row": 19
+   },
+   "hurt_up": {
+    "count": 2,
+    "fps": 8,
+    "loop": false,
+    "row": 12
+   },
+   "idle_down": {
+    "count": 4,
+    "fps": 5,
+    "loop": true,
+    "row": 0
+   },
+   "idle_side": {
+    "count": 4,
+    "fps": 5,
+    "loop": true,
+    "row": 14
+   },
+   "idle_up": {
+    "count": 4,
+    "fps": 5,
+    "loop": true,
+    "row": 7
+   },
+   "walk_down": {
+    "count": 6,
+    "fps": 10,
+    "loop": true,
+    "row": 1
+   },
+   "walk_side": {
+    "count": 6,
+    "fps": 10,
+    "loop": true,
+    "row": 15
+   },
+   "walk_up": {
+    "count": 6,
+    "fps": 10,
+    "loop": true,
+    "row": 8
+   }
+  },
+  "dirs": true,
+  "frame_h": 32,
+  "frame_w": 32,
+  "path": "res://assets/sprites/characters/smith.png"
+ },
+ "char_villager": {
+  "anims": {
+   "attack_down": {
+    "count": 4,
+    "fps": 12,
+    "loop": false,
+    "row": 2
+   },
+   "attack_side": {
+    "count": 4,
+    "fps": 12,
+    "loop": false,
+    "row": 16
+   },
+   "attack_up": {
+    "count": 4,
+    "fps": 12,
+    "loop": false,
+    "row": 9
+   },
+   "cast_down": {
+    "count": 4,
+    "fps": 8,
+    "loop": false,
+    "row": 3
+   },
+   "cast_side": {
+    "count": 4,
+    "fps": 8,
+    "loop": false,
+    "row": 17
+   },
+   "cast_up": {
+    "count": 4,
+    "fps": 8,
+    "loop": false,
+    "row": 10
+   },
+   "dash_down": {
+    "count": 3,
+    "fps": 12,
+    "loop": false,
+    "row": 4
+   },
+   "dash_side": {
+    "count": 3,
+    "fps": 12,
+    "loop": false,
+    "row": 18
+   },
+   "dash_up": {
+    "count": 3,
+    "fps": 12,
+    "loop": false,
+    "row": 11
+   },
+   "death_down": {
+    "count": 6,
+    "fps": 8,
+    "loop": false,
+    "row": 6
+   },
+   "death_side": {
+    "count": 6,
+    "fps": 8,
+    "loop": false,
+    "row": 20
+   },
+   "death_up": {
+    "count": 6,
+    "fps": 8,
+    "loop": false,
+    "row": 13
+   },
+   "hurt_down": {
+    "count": 2,
+    "fps": 8,
+    "loop": false,
+    "row": 5
+   },
+   "hurt_side": {
+    "count": 2,
+    "fps": 8,
+    "loop": false,
+    "row": 19
+   },
+   "hurt_up": {
+    "count": 2,
+    "fps": 8,
+    "loop": false,
+    "row": 12
+   },
+   "idle_down": {
+    "count": 4,
+    "fps": 5,
+    "loop": true,
+    "row": 0
+   },
+   "idle_side": {
+    "count": 4,
+    "fps": 5,
+    "loop": true,
+    "row": 14
+   },
+   "idle_up": {
+    "count": 4,
+    "fps": 5,
+    "loop": true,
+    "row": 7
+   },
+   "walk_down": {
+    "count": 6,
+    "fps": 10,
+    "loop": true,
+    "row": 1
+   },
+   "walk_side": {
+    "count": 6,
+    "fps": 10,
+    "loop": true,
+    "row": 15
+   },
+   "walk_up": {
+    "count": 6,
+    "fps": 10,
+    "loop": true,
+    "row": 8
+   }
+  },
+  "dirs": true,
+  "frame_h": 32,
+  "frame_w": 32,
+  "path": "res://assets/sprites/characters/villager.png"
+ },
+ "char_warrior": {
+  "anims": {
+   "attack_down": {
+    "count": 4,
+    "fps": 12,
+    "loop": false,
+    "row": 2
+   },
+   "attack_side": {
+    "count": 4,
+    "fps": 12,
+    "loop": false,
+    "row": 16
+   },
+   "attack_up": {
+    "count": 4,
+    "fps": 12,
+    "loop": false,
+    "row": 9
+   },
+   "cast_down": {
+    "count": 4,
+    "fps": 8,
+    "loop": false,
+    "row": 3
+   },
+   "cast_side": {
+    "count": 4,
+    "fps": 8,
+    "loop": false,
+    "row": 17
+   },
+   "cast_up": {
+    "count": 4,
+    "fps": 8,
+    "loop": false,
+    "row": 10
+   },
+   "dash_down": {
+    "count": 3,
+    "fps": 12,
+    "loop": false,
+    "row": 4
+   },
+   "dash_side": {
+    "count": 3,
+    "fps": 12,
+    "loop": false,
+    "row": 18
+   },
+   "dash_up": {
+    "count": 3,
+    "fps": 12,
+    "loop": false,
+    "row": 11
+   },
+   "death_down": {
+    "count": 6,
+    "fps": 8,
+    "loop": false,
+    "row": 6
+   },
+   "death_side": {
+    "count": 6,
+    "fps": 8,
+    "loop": false,
+    "row": 20
+   },
+   "death_up": {
+    "count": 6,
+    "fps": 8,
+    "loop": false,
+    "row": 13
+   },
+   "hurt_down": {
+    "count": 2,
+    "fps": 8,
+    "loop": false,
+    "row": 5
+   },
+   "hurt_side": {
+    "count": 2,
+    "fps": 8,
+    "loop": false,
+    "row": 19
+   },
+   "hurt_up": {
+    "count": 2,
+    "fps": 8,
+    "loop": false,
+    "row": 12
+   },
+   "idle_down": {
+    "count": 4,
+    "fps": 5,
+    "loop": true,
+    "row": 0
+   },
+   "idle_side": {
+    "count": 4,
+    "fps": 5,
+    "loop": true,
+    "row": 14
+   },
+   "idle_up": {
+    "count": 4,
+    "fps": 5,
+    "loop": true,
+    "row": 7
+   },
+   "walk_down": {
+    "count": 6,
+    "fps": 10,
+    "loop": true,
+    "row": 1
+   },
+   "walk_side": {
+    "count": 6,
+    "fps": 10,
+    "loop": true,
+    "row": 15
+   },
+   "walk_up": {
+    "count": 6,
+    "fps": 10,
+    "loop": true,
+    "row": 8
+   }
+  },
+  "dirs": true,
+  "frame_h": 32,
+  "frame_w": 32,
+  "path": "res://assets/sprites/characters/warrior.png"
+ },
+ "fx": {
+  "arrow": {
+   "h": 5,
+   "path": "res://assets/sprites/fx/arrow.png",
+   "w": 14
+  },
+  "bolt": {
+   "h": 12,
+   "path": "res://assets/sprites/fx/bolt.png",
+   "w": 12
+  },
+  "bone": {
+   "h": 14,
+   "path": "res://assets/sprites/fx/bone.png",
+   "w": 14
+  },
+  "bubble": {
+   "h": 12,
+   "path": "res://assets/sprites/fx/bubble.png",
+   "w": 12
+  },
+  "bullet": {
+   "h": 4,
+   "path": "res://assets/sprites/fx/bullet.png",
+   "w": 6
+  },
+  "crescent": {
+   "h": 10,
+   "path": "res://assets/sprites/fx/crescent.png",
+   "w": 16
+  },
+  "dark_orb": {
+   "h": 12,
+   "path": "res://assets/sprites/fx/dark_orb.png",
+   "w": 12
+  },
+  "fireball": {
+   "h": 16,
+   "path": "res://assets/sprites/fx/fireball.png",
+   "w": 16
+  },
+  "gas": {
+   "h": 24,
+   "path": "res://assets/sprites/fx/gas.png",
+   "w": 24
+  },
+  "holy_orb": {
+   "h": 10,
+   "path": "res://assets/sprites/fx/holy_orb.png",
+   "w": 10
+  },
+  "holy_sword": {
+   "h": 48,
+   "path": "res://assets/sprites/fx/holy_sword.png",
+   "w": 16
+  },
+  "ice": {
+   "h": 6,
+   "path": "res://assets/sprites/fx/ice.png",
+   "w": 18
+  },
+  "ice_spike": {
+   "h": 16,
+   "path": "res://assets/sprites/fx/ice_spike.png",
+   "w": 12
+  },
+  "knife": {
+   "h": 4,
+   "path": "res://assets/sprites/fx/knife.png",
+   "w": 10
+  },
+  "leaf": {
+   "h": 8,
+   "path": "res://assets/sprites/fx/leaf.png",
+   "w": 12
+  },
+  "light": {
+   "h": 64,
+   "path": "res://assets/sprites/fx/light.png",
+   "w": 64
+  },
+  "meteor": {
+   "h": 28,
+   "path": "res://assets/sprites/fx/meteor.png",
+   "w": 28
+  },
+  "px": {
+   "h": 4,
+   "path": "res://assets/sprites/fx/px.png",
+   "w": 4
+  },
+  "ring": {
+   "h": 64,
+   "path": "res://assets/sprites/fx/ring.png",
+   "w": 64
+  },
+  "rock": {
+   "h": 10,
+   "path": "res://assets/sprites/fx/rock.png",
+   "w": 10
+  },
+  "shadow": {
+   "h": 8,
+   "path": "res://assets/sprites/fx/shadow.png",
+   "w": 16
+  },
+  "smoke": {
+   "h": 16,
+   "path": "res://assets/sprites/fx/smoke.png",
+   "w": 16
+  },
+  "soft": {
+   "h": 32,
+   "path": "res://assets/sprites/fx/soft.png",
+   "w": 32
+  },
+  "spark": {
+   "h": 8,
+   "path": "res://assets/sprites/fx/spark.png",
+   "w": 8
+  },
+  "spike_rock": {
+   "h": 16,
+   "path": "res://assets/sprites/fx/spike_rock.png",
+   "w": 16
+  }
+ },
+ "glyphs": {
+  "index": {
+   "angel": [
+    15,
+    3
+   ],
+   "apple": [
+    1,
+    3
+   ],
+   "arrow": [
+    10,
+    0
+   ],
+   "arrows3": [
+    11,
+    0
+   ],
+   "backstep": [
+    14,
+    0
+   ],
+   "beam": [
+    2,
+    1
+   ],
+   "bird": [
+    1,
+    1
+   ],
+   "blink": [
+    0,
+    2
+   ],
+   "blood": [
+    10,
+    3
+   ],
+   "book": [
+    12,
+    2
+   ],
+   "boot": [
+    9,
+    2
+   ],
+   "bow": [
+    8,
+    3
+   ],
+   "bubble": [
+    8,
+    0
+   ],
+   "burst": [
+    0,
+    1
+   ],
+   "chest": [
+    15,
+    2
+   ],
+   "clone": [
+    10,
+    1
+   ],
+   "clover": [
+    10,
+    2
+   ],
+   "cross": [
+    5,
+    2
+   ],
+   "dagger": [
+    5,
+    1
+   ],
+   "dash": [
+    2,
+    3
+   ],
+   "drop": [
+    3,
+    3
+   ],
+   "elements": [
+    12,
+    3
+   ],
+   "eye": [
+    8,
+    2
+   ],
+   "fang": [
+    7,
+    1
+   ],
+   "flame": [
+    6,
+    0
+   ],
+   "flurry": [
+    6,
+    1
+   ],
+   "hammer": [
+    7,
+    3
+   ],
+   "heart": [
+    6,
+    2
+   ],
+   "hourglass": [
+    13,
+    2
+   ],
+   "ice": [
+    11,
+    1
+   ],
+   "knives": [
+    9,
+    1
+   ],
+   "leaf": [
+    4,
+    3
+   ],
+   "leap": [
+    7,
+    0
+   ],
+   "lotus": [
+    12,
+    1
+   ],
+   "mana": [
+    14,
+    3
+   ],
+   "mark": [
+    13,
+    3
+   ],
+   "meteor": [
+    13,
+    1
+   ],
+   "moon": [
+    6,
+    3
+   ],
+   "nova": [
+    1,
+    2
+   ],
+   "orb": [
+    3,
+    1
+   ],
+   "pick": [
+    0,
+    3
+   ],
+   "plus": [
+    14,
+    2
+   ],
+   "prism": [
+    2,
+    2
+   ],
+   "quake": [
+    4,
+    2
+   ],
+   "rage": [
+    11,
+    3
+   ],
+   "rain": [
+    12,
+    0
+   ],
+   "rock": [
+    15,
+    1
+   ],
+   "shield": [
+    2,
+    0
+   ],
+   "shout": [
+    3,
+    0
+   ],
+   "skull": [
+    9,
+    0
+   ],
+   "slash": [
+    1,
+    0
+   ],
+   "smoke": [
+    8,
+    1
+   ],
+   "spikes": [
+    5,
+    0
+   ],
+   "star": [
+    11,
+    2
+   ],
+   "step": [
+    4,
+    1
+   ],
+   "sun": [
+    5,
+    3
+   ],
+   "sword": [
+    0,
+    0
+   ],
+   "tornado": [
+    14,
+    1
+   ],
+   "trap": [
+    13,
+    0
+   ],
+   "vine": [
+    15,
+    0
+   ],
+   "vortex": [
+    3,
+    2
+   ],
+   "wand": [
+    9,
+    3
+   ],
+   "whirl": [
+    4,
+    0
+   ],
+   "wing": [
+    7,
+    2
+   ]
+  },
+  "path": "res://assets/sprites/ui/glyphs.png",
+  "size": 16
+ },
+ "item_icons": {
+  "index": {
+   "armor_heavy": [
+    8,
+    0
+   ],
+   "armor_leather": [
+    10,
+    0
+   ],
+   "armor_light": [
+    9,
+    0
+   ],
+   "armor_robe": [
+    11,
+    0
+   ],
+   "bag": [
+    0,
+    5
+   ],
+   "book_dark": [
+    7,
+    4
+   ],
+   "book_earth": [
+    10,
+    4
+   ],
+   "book_fire": [
+    8,
+    4
+   ],
+   "book_light": [
+    6,
+    4
+   ],
+   "book_neutral": [
+    12,
+    4
+   ],
+   "book_water": [
+    9,
+    4
+   ],
+   "book_wind": [
+    11,
+    4
+   ],
+   "bow": [
+    6,
+    0
+   ],
+   "bracelet": [
+    14,
+    0
+   ],
+   "dagger": [
+    3,
+    0
+   ],
+   "dungeon_crystal": [
+    14,
+    4
+   ],
+   "food_apple": [
+    12,
+    1
+   ],
+   "food_berries": [
+    3,
+    2
+   ],
+   "food_bread": [
+    11,
+    1
+   ],
+   "food_feast": [
+    2,
+    2
+   ],
+   "food_fish": [
+    4,
+    2
+   ],
+   "food_fish_stew": [
+    15,
+    1
+   ],
+   "food_grilled_meat": [
+    14,
+    1
+   ],
+   "food_hearty_stew": [
+    0,
+    2
+   ],
+   "food_honey_cake": [
+    1,
+    2
+   ],
+   "food_raw_meat": [
+    13,
+    1
+   ],
+   "gold": [
+    15,
+    4
+   ],
+   "grimoire": [
+    5,
+    0
+   ],
+   "gun": [
+    7,
+    0
+   ],
+   "hammer": [
+    2,
+    0
+   ],
+   "key": [
+    1,
+    5
+   ],
+   "mat_ancient_bark": [
+    12,
+    3
+   ],
+   "mat_arcane_dust": [
+    0,
+    3
+   ],
+   "mat_bear_claw": [
+    7,
+    3
+   ],
+   "mat_bone": [
+    10,
+    3
+   ],
+   "mat_cloth": [
+    3,
+    3
+   ],
+   "mat_crystal_shard": [
+    14,
+    2
+   ],
+   "mat_dragon_scale": [
+    2,
+    4
+   ],
+   "mat_dryad_petal": [
+    13,
+    3
+   ],
+   "mat_enchant_stone": [
+    15,
+    2
+   ],
+   "mat_feather": [
+    4,
+    4
+   ],
+   "mat_goblin_ear": [
+    8,
+    3
+   ],
+   "mat_hardwood": [
+    6,
+    2
+   ],
+   "mat_herb": [
+    5,
+    4
+   ],
+   "mat_leather": [
+    2,
+    3
+   ],
+   "mat_lizard_scale": [
+    14,
+    3
+   ],
+   "mat_mermaid_pearl": [
+    15,
+    3
+   ],
+   "mat_monster_core": [
+    1,
+    3
+   ],
+   "mat_ogre_hide": [
+    9,
+    3
+   ],
+   "mat_ore_adamantite": [
+    13,
+    2
+   ],
+   "mat_ore_copper": [
+    8,
+    2
+   ],
+   "mat_ore_gold": [
+    11,
+    2
+   ],
+   "mat_ore_iron": [
+    9,
+    2
+   ],
+   "mat_ore_mithril": [
+    12,
+    2
+   ],
+   "mat_ore_silver": [
+    10,
+    2
+   ],
+   "mat_phoenix_feather": [
+    3,
+    4
+   ],
+   "mat_rotten_flesh": [
+    11,
+    3
+   ],
+   "mat_slime_gel": [
+    4,
+    3
+   ],
+   "mat_stone": [
+    7,
+    2
+   ],
+   "mat_tiger_fang": [
+    6,
+    3
+   ],
+   "mat_vampire_fang": [
+    0,
+    4
+   ],
+   "mat_wolf_pelt": [
+    5,
+    3
+   ],
+   "mat_wood": [
+    5,
+    2
+   ],
+   "mat_wyvern_wing": [
+    1,
+    4
+   ],
+   "necklace": [
+    12,
+    0
+   ],
+   "pot_antidote": [
+    6,
+    1
+   ],
+   "pot_def": [
+    9,
+    1
+   ],
+   "pot_elixir": [
+    5,
+    1
+   ],
+   "pot_hp_l": [
+    1,
+    1
+   ],
+   "pot_hp_m": [
+    0,
+    1
+   ],
+   "pot_hp_s": [
+    15,
+    0
+   ],
+   "pot_int": [
+    8,
+    1
+   ],
+   "pot_mp_l": [
+    4,
+    1
+   ],
+   "pot_mp_m": [
+    3,
+    1
+   ],
+   "pot_mp_s": [
+    2,
+    1
+   ],
+   "pot_spd": [
+    10,
+    1
+   ],
+   "pot_str": [
+    7,
+    1
+   ],
+   "quest": [
+    2,
+    5
+   ],
+   "ring": [
+    13,
+    0
+   ],
+   "scroll": [
+    13,
+    4
+   ],
+   "spear": [
+    1,
+    0
+   ],
+   "sword": [
+    0,
+    0
+   ],
+   "wand": [
+    4,
+    0
+   ]
+  },
+  "path": "res://assets/sprites/ui/items.png",
+  "size": 16
+ },
+ "mon_angel": {
+  "anims": {
+   "attack": {
+    "count": 4,
+    "fps": 11,
+    "loop": false,
+    "row": 2
+   },
+   "death": {
+    "count": 4,
+    "fps": 8,
+    "loop": false,
+    "row": 4
+   },
+   "hurt": {
+    "count": 2,
+    "fps": 8,
+    "loop": false,
+    "row": 3
+   },
+   "idle": {
+    "count": 4,
+    "fps": 7,
+    "loop": true,
+    "row": 0
+   },
+   "move": {
+    "count": 6,
+    "fps": 10,
+    "loop": true,
+    "row": 1
+   }
+  },
+  "dirs": false,
+  "flyer": false,
+  "frame_h": 32,
+  "frame_w": 28,
+  "path": "res://assets/sprites/monsters/angel.png"
+ },
+ "mon_bat": {
+  "anims": {
+   "attack": {
+    "count": 4,
+    "fps": 11,
+    "loop": false,
+    "row": 2
+   },
+   "death": {
+    "count": 4,
+    "fps": 8,
+    "loop": false,
+    "row": 4
+   },
+   "hurt": {
+    "count": 2,
+    "fps": 8,
+    "loop": false,
+    "row": 3
+   },
+   "idle": {
+    "count": 4,
+    "fps": 7,
+    "loop": true,
+    "row": 0
+   },
+   "move": {
+    "count": 4,
+    "fps": 10,
+    "loop": true,
+    "row": 1
+   }
+  },
+  "dirs": false,
+  "flyer": true,
+  "frame_h": 12,
+  "frame_w": 16,
+  "path": "res://assets/sprites/monsters/bat.png"
+ },
+ "mon_bear": {
+  "anims": {
+   "attack": {
+    "count": 4,
+    "fps": 11,
+    "loop": false,
+    "row": 2
+   },
+   "death": {
+    "count": 4,
+    "fps": 8,
+    "loop": false,
+    "row": 4
+   },
+   "hurt": {
+    "count": 2,
+    "fps": 8,
+    "loop": false,
+    "row": 3
+   },
+   "idle": {
+    "count": 4,
+    "fps": 7,
+    "loop": true,
+    "row": 0
+   },
+   "move": {
+    "count": 6,
+    "fps": 10,
+    "loop": true,
+    "row": 1
+   }
+  },
+  "dirs": false,
+  "flyer": false,
+  "frame_h": 32,
+  "frame_w": 38,
+  "path": "res://assets/sprites/monsters/bear.png"
+ },
+ "mon_deer": {
+  "anims": {
+   "attack": {
+    "count": 4,
+    "fps": 11,
+    "loop": false,
+    "row": 2
+   },
+   "death": {
+    "count": 4,
+    "fps": 8,
+    "loop": false,
+    "row": 4
+   },
+   "hurt": {
+    "count": 2,
+    "fps": 8,
+    "loop": false,
+    "row": 3
+   },
+   "idle": {
+    "count": 4,
+    "fps": 7,
+    "loop": true,
+    "row": 0
+   },
+   "move": {
+    "count": 6,
+    "fps": 10,
+    "loop": true,
+    "row": 1
+   }
+  },
+  "dirs": false,
+  "flyer": false,
+  "frame_h": 32,
+  "frame_w": 30,
+  "path": "res://assets/sprites/monsters/deer.png"
+ },
+ "mon_dragon": {
+  "anims": {
+   "attack": {
+    "count": 4,
+    "fps": 11,
+    "loop": false,
+    "row": 2
+   },
+   "death": {
+    "count": 4,
+    "fps": 8,
+    "loop": false,
+    "row": 4
+   },
+   "hurt": {
+    "count": 2,
+    "fps": 8,
+    "loop": false,
+    "row": 3
+   },
+   "idle": {
+    "count": 4,
+    "fps": 7,
+    "loop": true,
+    "row": 0
+   },
+   "move": {
+    "count": 6,
+    "fps": 10,
+    "loop": true,
+    "row": 1
+   }
+  },
+  "dirs": false,
+  "flyer": false,
+  "frame_h": 66,
+  "frame_w": 84,
+  "path": "res://assets/sprites/monsters/dragon.png"
+ },
+ "mon_dryad": {
+  "anims": {
+   "attack": {
+    "count": 4,
+    "fps": 11,
+    "loop": false,
+    "row": 2
+   },
+   "death": {
+    "count": 4,
+    "fps": 8,
+    "loop": false,
+    "row": 4
+   },
+   "hurt": {
+    "count": 2,
+    "fps": 8,
+    "loop": false,
+    "row": 3
+   },
+   "idle": {
+    "count": 4,
+    "fps": 7,
+    "loop": true,
+    "row": 0
+   },
+   "move": {
+    "count": 6,
+    "fps": 10,
+    "loop": true,
+    "row": 1
+   }
+  },
+  "dirs": false,
+  "flyer": false,
+  "frame_h": 34,
+  "frame_w": 26,
+  "path": "res://assets/sprites/monsters/dryad.png"
+ },
+ "mon_goblin": {
+  "anims": {
+   "attack": {
+    "count": 4,
+    "fps": 11,
+    "loop": false,
+    "row": 2
+   },
+   "death": {
+    "count": 4,
+    "fps": 8,
+    "loop": false,
+    "row": 4
+   },
+   "hurt": {
+    "count": 2,
+    "fps": 8,
+    "loop": false,
+    "row": 3
+   },
+   "idle": {
+    "count": 4,
+    "fps": 7,
+    "loop": true,
+    "row": 0
+   },
+   "move": {
+    "count": 6,
+    "fps": 10,
+    "loop": true,
+    "row": 1
+   }
+  },
+  "dirs": false,
+  "flyer": false,
+  "frame_h": 24,
+  "frame_w": 24,
+  "path": "res://assets/sprites/monsters/goblin.png"
+ },
+ "mon_guardian": {
+  "anims": {
+   "attack": {
+    "count": 4,
+    "fps": 11,
+    "loop": false,
+    "row": 2
+   },
+   "death": {
+    "count": 4,
+    "fps": 8,
+    "loop": false,
+    "row": 4
+   },
+   "hurt": {
+    "count": 2,
+    "fps": 8,
+    "loop": false,
+    "row": 3
+   },
+   "idle": {
+    "count": 4,
+    "fps": 7,
+    "loop": true,
+    "row": 0
+   },
+   "move": {
+    "count": 6,
+    "fps": 10,
+    "loop": true,
+    "row": 1
+   }
+  },
+  "dirs": false,
+  "flyer": false,
+  "frame_h": 34,
+  "frame_w": 28,
+  "path": "res://assets/sprites/monsters/guardian.png"
+ },
+ "mon_hawk": {
+  "anims": {
+   "attack": {
+    "count": 4,
+    "fps": 11,
+    "loop": false,
+    "row": 2
+   },
+   "death": {
+    "count": 4,
+    "fps": 8,
+    "loop": false,
+    "row": 4
+   },
+   "hurt": {
+    "count": 2,
+    "fps": 8,
+    "loop": false,
+    "row": 3
+   },
+   "idle": {
+    "count": 4,
+    "fps": 7,
+    "loop": true,
+    "row": 0
+   },
+   "move": {
+    "count": 4,
+    "fps": 10,
+    "loop": true,
+    "row": 1
+   }
+  },
+  "dirs": false,
+  "flyer": true,
+  "frame_h": 16,
+  "frame_w": 20,
+  "path": "res://assets/sprites/monsters/hawk.png"
+ },
+ "mon_lizard": {
+  "anims": {
+   "attack": {
+    "count": 4,
+    "fps": 11,
+    "loop": false,
+    "row": 2
+   },
+   "death": {
+    "count": 4,
+    "fps": 8,
+    "loop": false,
+    "row": 4
+   },
+   "hurt": {
+    "count": 2,
+    "fps": 8,
+    "loop": false,
+    "row": 3
+   },
+   "idle": {
+    "count": 4,
+    "fps": 7,
+    "loop": true,
+    "row": 0
+   },
+   "move": {
+    "count": 6,
+    "fps": 10,
+    "loop": true,
+    "row": 1
+   }
+  },
+  "dirs": false,
+  "flyer": false,
+  "frame_h": 32,
+  "frame_w": 30,
+  "path": "res://assets/sprites/monsters/lizard.png"
+ },
+ "mon_mermaid": {
+  "anims": {
+   "attack": {
+    "count": 4,
+    "fps": 11,
+    "loop": false,
+    "row": 2
+   },
+   "death": {
+    "count": 4,
+    "fps": 8,
+    "loop": false,
+    "row": 4
+   },
+   "hurt": {
+    "count": 2,
+    "fps": 8,
+    "loop": false,
+    "row": 3
+   },
+   "idle": {
+    "count": 4,
+    "fps": 7,
+    "loop": true,
+    "row": 0
+   },
+   "move": {
+    "count": 6,
+    "fps": 10,
+    "loop": true,
+    "row": 1
+   }
+  },
+  "dirs": false,
+  "flyer": false,
+  "frame_h": 30,
+  "frame_w": 30,
+  "path": "res://assets/sprites/monsters/mermaid.png"
+ },
+ "mon_mimic": {
+  "anims": {
+   "attack": {
+    "count": 4,
+    "fps": 11,
+    "loop": false,
+    "row": 2
+   },
+   "death": {
+    "count": 4,
+    "fps": 8,
+    "loop": false,
+    "row": 4
+   },
+   "hurt": {
+    "count": 2,
+    "fps": 8,
+    "loop": false,
+    "row": 3
+   },
+   "idle": {
+    "count": 4,
+    "fps": 7,
+    "loop": true,
+    "row": 0
+   },
+   "move": {
+    "count": 4,
+    "fps": 10,
+    "loop": true,
+    "row": 1
+   }
+  },
+  "dirs": false,
+  "flyer": false,
+  "frame_h": 20,
+  "frame_w": 22,
+  "path": "res://assets/sprites/monsters/mimic.png"
+ },
+ "mon_ogre": {
+  "anims": {
+   "attack": {
+    "count": 4,
+    "fps": 11,
+    "loop": false,
+    "row": 2
+   },
+   "death": {
+    "count": 4,
+    "fps": 8,
+    "loop": false,
+    "row": 4
+   },
+   "hurt": {
+    "count": 2,
+    "fps": 8,
+    "loop": false,
+    "row": 3
+   },
+   "idle": {
+    "count": 4,
+    "fps": 7,
+    "loop": true,
+    "row": 0
+   },
+   "move": {
+    "count": 6,
+    "fps": 10,
+    "loop": true,
+    "row": 1
+   }
+  },
+  "dirs": false,
+  "flyer": false,
+  "frame_h": 46,
+  "frame_w": 44,
+  "path": "res://assets/sprites/monsters/ogre.png"
+ },
+ "mon_phoenix": {
+  "anims": {
+   "attack": {
+    "count": 4,
+    "fps": 11,
+    "loop": false,
+    "row": 2
+   },
+   "death": {
+    "count": 4,
+    "fps": 8,
+    "loop": false,
+    "row": 4
+   },
+   "hurt": {
+    "count": 2,
+    "fps": 8,
+    "loop": false,
+    "row": 3
+   },
+   "idle": {
+    "count": 4,
+    "fps": 7,
+    "loop": true,
+    "row": 0
+   },
+   "move": {
+    "count": 4,
+    "fps": 10,
+    "loop": true,
+    "row": 1
+   }
+  },
+  "dirs": false,
+  "flyer": true,
+  "frame_h": 46,
+  "frame_w": 56,
+  "path": "res://assets/sprites/monsters/phoenix.png"
+ },
+ "mon_rabbit": {
+  "anims": {
+   "attack": {
+    "count": 4,
+    "fps": 11,
+    "loop": false,
+    "row": 2
+   },
+   "death": {
+    "count": 4,
+    "fps": 8,
+    "loop": false,
+    "row": 4
+   },
+   "hurt": {
+    "count": 2,
+    "fps": 8,
+    "loop": false,
+    "row": 3
+   },
+   "idle": {
+    "count": 4,
+    "fps": 7,
+    "loop": true,
+    "row": 0
+   },
+   "move": {
+    "count": 4,
+    "fps": 10,
+    "loop": true,
+    "row": 1
+   }
+  },
+  "dirs": false,
+  "flyer": false,
+  "frame_h": 14,
+  "frame_w": 16,
+  "path": "res://assets/sprites/monsters/rabbit.png"
+ },
+ "mon_skeleton": {
+  "anims": {
+   "attack": {
+    "count": 4,
+    "fps": 11,
+    "loop": false,
+    "row": 2
+   },
+   "death": {
+    "count": 4,
+    "fps": 8,
+    "loop": false,
+    "row": 4
+   },
+   "hurt": {
+    "count": 2,
+    "fps": 8,
+    "loop": false,
+    "row": 3
+   },
+   "idle": {
+    "count": 4,
+    "fps": 7,
+    "loop": true,
+    "row": 0
+   },
+   "move": {
+    "count": 6,
+    "fps": 10,
+    "loop": true,
+    "row": 1
+   }
+  },
+  "dirs": false,
+  "flyer": false,
+  "frame_h": 30,
+  "frame_w": 24,
+  "path": "res://assets/sprites/monsters/skeleton.png"
+ },
+ "mon_slime": {
+  "anims": {
+   "attack": {
+    "count": 4,
+    "fps": 11,
+    "loop": false,
+    "row": 2
+   },
+   "death": {
+    "count": 4,
+    "fps": 8,
+    "loop": false,
+    "row": 4
+   },
+   "hurt": {
+    "count": 2,
+    "fps": 8,
+    "loop": false,
+    "row": 3
+   },
+   "idle": {
+    "count": 4,
+    "fps": 7,
+    "loop": true,
+    "row": 0
+   },
+   "move": {
+    "count": 6,
+    "fps": 10,
+    "loop": true,
+    "row": 1
+   }
+  },
+  "dirs": false,
+  "flyer": false,
+  "frame_h": 18,
+  "frame_w": 20,
+  "path": "res://assets/sprites/monsters/slime.png"
+ },
+ "mon_tiger": {
+  "anims": {
+   "attack": {
+    "count": 4,
+    "fps": 11,
+    "loop": false,
+    "row": 2
+   },
+   "death": {
+    "count": 4,
+    "fps": 8,
+    "loop": false,
+    "row": 4
+   },
+   "hurt": {
+    "count": 2,
+    "fps": 8,
+    "loop": false,
+    "row": 3
+   },
+   "idle": {
+    "count": 4,
+    "fps": 7,
+    "loop": true,
+    "row": 0
+   },
+   "move": {
+    "count": 6,
+    "fps": 10,
+    "loop": true,
+    "row": 1
+   }
+  },
+  "dirs": false,
+  "flyer": false,
+  "frame_h": 26,
+  "frame_w": 38,
+  "path": "res://assets/sprites/monsters/tiger.png"
+ },
+ "mon_treant": {
+  "anims": {
+   "attack": {
+    "count": 4,
+    "fps": 11,
+    "loop": false,
+    "row": 2
+   },
+   "death": {
+    "count": 4,
+    "fps": 8,
+    "loop": false,
+    "row": 4
+   },
+   "hurt": {
+    "count": 2,
+    "fps": 8,
+    "loop": false,
+    "row": 3
+   },
+   "idle": {
+    "count": 4,
+    "fps": 7,
+    "loop": true,
+    "row": 0
+   },
+   "move": {
+    "count": 6,
+    "fps": 10,
+    "loop": true,
+    "row": 1
+   }
+  },
+  "dirs": false,
+  "flyer": false,
+  "frame_h": 50,
+  "frame_w": 44,
+  "path": "res://assets/sprites/monsters/treant.png"
+ },
+ "mon_vampire": {
+  "anims": {
+   "attack": {
+    "count": 4,
+    "fps": 11,
+    "loop": false,
+    "row": 2
+   },
+   "death": {
+    "count": 4,
+    "fps": 8,
+    "loop": false,
+    "row": 4
+   },
+   "hurt": {
+    "count": 2,
+    "fps": 8,
+    "loop": false,
+    "row": 3
+   },
+   "idle": {
+    "count": 4,
+    "fps": 7,
+    "loop": true,
+    "row": 0
+   },
+   "move": {
+    "count": 6,
+    "fps": 10,
+    "loop": true,
+    "row": 1
+   }
+  },
+  "dirs": false,
+  "flyer": false,
+  "frame_h": 34,
+  "frame_w": 26,
+  "path": "res://assets/sprites/monsters/vampire.png"
+ },
+ "mon_wolf": {
+  "anims": {
+   "attack": {
+    "count": 4,
+    "fps": 11,
+    "loop": false,
+    "row": 2
+   },
+   "death": {
+    "count": 4,
+    "fps": 8,
+    "loop": false,
+    "row": 4
+   },
+   "hurt": {
+    "count": 2,
+    "fps": 8,
+    "loop": false,
+    "row": 3
+   },
+   "idle": {
+    "count": 4,
+    "fps": 7,
+    "loop": true,
+    "row": 0
+   },
+   "move": {
+    "count": 6,
+    "fps": 10,
+    "loop": true,
+    "row": 1
+   }
+  },
+  "dirs": false,
+  "flyer": false,
+  "frame_h": 24,
+  "frame_w": 32,
+  "path": "res://assets/sprites/monsters/wolf.png"
+ },
+ "mon_wyvern": {
+  "anims": {
+   "attack": {
+    "count": 4,
+    "fps": 11,
+    "loop": false,
+    "row": 2
+   },
+   "death": {
+    "count": 4,
+    "fps": 8,
+    "loop": false,
+    "row": 4
+   },
+   "hurt": {
+    "count": 2,
+    "fps": 8,
+    "loop": false,
+    "row": 3
+   },
+   "idle": {
+    "count": 4,
+    "fps": 7,
+    "loop": true,
+    "row": 0
+   },
+   "move": {
+    "count": 4,
+    "fps": 10,
+    "loop": true,
+    "row": 1
+   }
+  },
+  "dirs": false,
+  "flyer": true,
+  "frame_h": 42,
+  "frame_w": 50,
+  "path": "res://assets/sprites/monsters/wyvern.png"
+ },
+ "mon_zombie": {
+  "anims": {
+   "attack": {
+    "count": 4,
+    "fps": 11,
+    "loop": false,
+    "row": 2
+   },
+   "death": {
+    "count": 4,
+    "fps": 8,
+    "loop": false,
+    "row": 4
+   },
+   "hurt": {
+    "count": 2,
+    "fps": 8,
+    "loop": false,
+    "row": 3
+   },
+   "idle": {
+    "count": 4,
+    "fps": 7,
+    "loop": true,
+    "row": 0
+   },
+   "move": {
+    "count": 6,
+    "fps": 10,
+    "loop": true,
+    "row": 1
+   }
+  },
+  "dirs": false,
+  "flyer": false,
+  "frame_h": 30,
+  "frame_w": 24,
+  "path": "res://assets/sprites/monsters/zombie.png"
+ },
+ "objects": {
+  "bld_architect": {
+   "h": 64,
+   "path": "res://assets/sprites/world/objects/bld_architect.png",
+   "w": 64
+  },
+  "bld_artifact": {
+   "h": 64,
+   "path": "res://assets/sprites/world/objects/bld_artifact.png",
+   "w": 64
+  },
+  "bld_blacksmith": {
+   "h": 64,
+   "path": "res://assets/sprites/world/objects/bld_blacksmith.png",
+   "w": 64
+  },
+  "bld_food": {
+   "h": 64,
+   "path": "res://assets/sprites/world/objects/bld_food.png",
+   "w": 64
+  },
+  "bld_gear": {
+   "h": 64,
+   "path": "res://assets/sprites/world/objects/bld_gear.png",
+   "w": 64
+  },
+  "bld_guild": {
+   "h": 96,
+   "path": "res://assets/sprites/world/objects/bld_guild.png",
+   "w": 112
+  },
+  "bld_house": {
+   "h": 56,
+   "path": "res://assets/sprites/world/objects/bld_house.png",
+   "w": 56
+  },
+  "bld_house2": {
+   "h": 56,
+   "path": "res://assets/sprites/world/objects/bld_house2.png",
+   "w": 56
+  },
+  "bld_magic": {
+   "h": 64,
+   "path": "res://assets/sprites/world/objects/bld_magic.png",
+   "w": 64
+  },
+  "bld_potion": {
+   "h": 64,
+   "path": "res://assets/sprites/world/objects/bld_potion.png",
+   "w": 64
+  },
+  "bush": {
+   "h": 16,
+   "path": "res://assets/sprites/world/objects/bush.png",
+   "w": 20
+  },
+  "bush_berry": {
+   "h": 16,
+   "path": "res://assets/sprites/world/objects/bush_berry.png",
+   "w": 20
+  },
+  "dg_arrow_trap": {
+   "h": 16,
+   "path": "res://assets/sprites/world/objects/dg_arrow_trap.png",
+   "w": 16
+  },
+  "dg_bomb0": {
+   "h": 16,
+   "path": "res://assets/sprites/world/objects/dg_bomb0.png",
+   "w": 14
+  },
+  "dg_bomb1": {
+   "h": 16,
+   "path": "res://assets/sprites/world/objects/dg_bomb1.png",
+   "w": 14
+  },
+  "dg_bones": {
+   "h": 14,
+   "path": "res://assets/sprites/world/objects/dg_bones.png",
+   "w": 18
+  },
+  "dg_boulder0": {
+   "h": 24,
+   "path": "res://assets/sprites/world/objects/dg_boulder0.png",
+   "w": 24
+  },
+  "dg_boulder1": {
+   "h": 24,
+   "path": "res://assets/sprites/world/objects/dg_boulder1.png",
+   "w": 24
+  },
+  "dg_boulder2": {
+   "h": 24,
+   "path": "res://assets/sprites/world/objects/dg_boulder2.png",
+   "w": 24
+  },
+  "dg_boulder3": {
+   "h": 24,
+   "path": "res://assets/sprites/world/objects/dg_boulder3.png",
+   "w": 24
+  },
+  "dg_chest0_closed": {
+   "h": 18,
+   "path": "res://assets/sprites/world/objects/dg_chest0_closed.png",
+   "w": 20
+  },
+  "dg_chest0_open": {
+   "h": 18,
+   "path": "res://assets/sprites/world/objects/dg_chest0_open.png",
+   "w": 20
+  },
+  "dg_chest1_closed": {
+   "h": 18,
+   "path": "res://assets/sprites/world/objects/dg_chest1_closed.png",
+   "w": 20
+  },
+  "dg_chest1_open": {
+   "h": 18,
+   "path": "res://assets/sprites/world/objects/dg_chest1_open.png",
+   "w": 20
+  },
+  "dg_chest2_closed": {
+   "h": 18,
+   "path": "res://assets/sprites/world/objects/dg_chest2_closed.png",
+   "w": 20
+  },
+  "dg_chest2_open": {
+   "h": 18,
+   "path": "res://assets/sprites/world/objects/dg_chest2_open.png",
+   "w": 20
+  },
+  "dg_circle0": {
+   "h": 24,
+   "path": "res://assets/sprites/world/objects/dg_circle0.png",
+   "w": 40
+  },
+  "dg_circle1": {
+   "h": 24,
+   "path": "res://assets/sprites/world/objects/dg_circle1.png",
+   "w": 40
+  },
+  "dg_coral": {
+   "h": 20,
+   "path": "res://assets/sprites/world/objects/dg_coral.png",
+   "w": 20
+  },
+  "dg_crystals": {
+   "h": 22,
+   "path": "res://assets/sprites/world/objects/dg_crystals.png",
+   "w": 20
+  },
+  "dg_entrance0": {
+   "h": 40,
+   "path": "res://assets/sprites/world/objects/dg_entrance0.png",
+   "w": 40
+  },
+  "dg_entrance1": {
+   "h": 40,
+   "path": "res://assets/sprites/world/objects/dg_entrance1.png",
+   "w": 40
+  },
+  "dg_entrance2": {
+   "h": 40,
+   "path": "res://assets/sprites/world/objects/dg_entrance2.png",
+   "w": 40
+  },
+  "dg_entrance3": {
+   "h": 40,
+   "path": "res://assets/sprites/world/objects/dg_entrance3.png",
+   "w": 40
+  },
+  "dg_gas_vent": {
+   "h": 16,
+   "path": "res://assets/sprites/world/objects/dg_gas_vent.png",
+   "w": 16
+  },
+  "dg_grave": {
+   "h": 24,
+   "path": "res://assets/sprites/world/objects/dg_grave.png",
+   "w": 18
+  },
+  "dg_nest": {
+   "h": 20,
+   "path": "res://assets/sprites/world/objects/dg_nest.png",
+   "w": 28
+  },
+  "dg_pillar": {
+   "h": 32,
+   "path": "res://assets/sprites/world/objects/dg_pillar.png",
+   "w": 16
+  },
+  "dg_pit_open": {
+   "h": 16,
+   "path": "res://assets/sprites/world/objects/dg_pit_open.png",
+   "w": 16
+  },
+  "dg_plate": {
+   "h": 16,
+   "path": "res://assets/sprites/world/objects/dg_plate.png",
+   "w": 16
+  },
+  "dg_portal0": {
+   "h": 32,
+   "path": "res://assets/sprites/world/objects/dg_portal0.png",
+   "w": 32
+  },
+  "dg_portal1": {
+   "h": 32,
+   "path": "res://assets/sprites/world/objects/dg_portal1.png",
+   "w": 32
+  },
+  "dg_portal2": {
+   "h": 32,
+   "path": "res://assets/sprites/world/objects/dg_portal2.png",
+   "w": 32
+  },
+  "dg_portal3": {
+   "h": 32,
+   "path": "res://assets/sprites/world/objects/dg_portal3.png",
+   "w": 32
+  },
+  "dg_shrooms": {
+   "h": 20,
+   "path": "res://assets/sprites/world/objects/dg_shrooms.png",
+   "w": 20
+  },
+  "dg_spike0": {
+   "h": 16,
+   "path": "res://assets/sprites/world/objects/dg_spike0.png",
+   "w": 16
+  },
+  "dg_spike1": {
+   "h": 16,
+   "path": "res://assets/sprites/world/objects/dg_spike1.png",
+   "w": 16
+  },
+  "dg_spike2": {
+   "h": 16,
+   "path": "res://assets/sprites/world/objects/dg_spike2.png",
+   "w": 16
+  },
+  "dg_tele_rune0": {
+   "h": 16,
+   "path": "res://assets/sprites/world/objects/dg_tele_rune0.png",
+   "w": 16
+  },
+  "dg_tele_rune1": {
+   "h": 16,
+   "path": "res://assets/sprites/world/objects/dg_tele_rune1.png",
+   "w": 16
+  },
+  "dg_torch0": {
+   "h": 20,
+   "path": "res://assets/sprites/world/objects/dg_torch0.png",
+   "w": 10
+  },
+  "dg_torch1": {
+   "h": 20,
+   "path": "res://assets/sprites/world/objects/dg_torch1.png",
+   "w": 10
+  },
+  "dg_totem": {
+   "h": 32,
+   "path": "res://assets/sprites/world/objects/dg_totem.png",
+   "w": 18
+  },
+  "ore_adamantite": {
+   "h": 20,
+   "path": "res://assets/sprites/world/objects/ore_adamantite.png",
+   "w": 24
+  },
+  "ore_copper": {
+   "h": 20,
+   "path": "res://assets/sprites/world/objects/ore_copper.png",
+   "w": 24
+  },
+  "ore_crystal": {
+   "h": 20,
+   "path": "res://assets/sprites/world/objects/ore_crystal.png",
+   "w": 24
+  },
+  "ore_gold": {
+   "h": 20,
+   "path": "res://assets/sprites/world/objects/ore_gold.png",
+   "w": 24
+  },
+  "ore_iron": {
+   "h": 20,
+   "path": "res://assets/sprites/world/objects/ore_iron.png",
+   "w": 24
+  },
+  "ore_mithril": {
+   "h": 20,
+   "path": "res://assets/sprites/world/objects/ore_mithril.png",
+   "w": 24
+  },
+  "ore_silver": {
+   "h": 20,
+   "path": "res://assets/sprites/world/objects/ore_silver.png",
+   "w": 24
+  },
+  "prop_anvil": {
+   "h": 12,
+   "path": "res://assets/sprites/world/objects/prop_anvil.png",
+   "w": 18
+  },
+  "prop_banner": {
+   "h": 36,
+   "path": "res://assets/sprites/world/objects/prop_banner.png",
+   "w": 14
+  },
+  "prop_barrel": {
+   "h": 16,
+   "path": "res://assets/sprites/world/objects/prop_barrel.png",
+   "w": 14
+  },
+  "prop_campfire": {
+   "h": 14,
+   "path": "res://assets/sprites/world/objects/prop_campfire.png",
+   "w": 16
+  },
+  "prop_crate": {
+   "h": 16,
+   "path": "res://assets/sprites/world/objects/prop_crate.png",
+   "w": 16
+  },
+  "prop_fountain": {
+   "h": 40,
+   "path": "res://assets/sprites/world/objects/prop_fountain.png",
+   "w": 48
+  },
+  "prop_lamp": {
+   "h": 34,
+   "path": "res://assets/sprites/world/objects/prop_lamp.png",
+   "w": 12
+  },
+  "prop_stall0": {
+   "h": 34,
+   "path": "res://assets/sprites/world/objects/prop_stall0.png",
+   "w": 40
+  },
+  "prop_stall1": {
+   "h": 34,
+   "path": "res://assets/sprites/world/objects/prop_stall1.png",
+   "w": 40
+  },
+  "prop_stall2": {
+   "h": 34,
+   "path": "res://assets/sprites/world/objects/prop_stall2.png",
+   "w": 40
+  },
+  "prop_tower": {
+   "h": 52,
+   "path": "res://assets/sprites/world/objects/prop_tower.png",
+   "w": 32
+  },
+  "prop_waypoint": {
+   "h": 32,
+   "path": "res://assets/sprites/world/objects/prop_waypoint.png",
+   "w": 20
+  },
+  "rock_big": {
+   "h": 24,
+   "path": "res://assets/sprites/world/objects/rock_big.png",
+   "w": 30
+  },
+  "rock_dark": {
+   "h": 20,
+   "path": "res://assets/sprites/world/objects/rock_dark.png",
+   "w": 24
+  },
+  "rock_small": {
+   "h": 15,
+   "path": "res://assets/sprites/world/objects/rock_small.png",
+   "w": 18
+  },
+  "tree_big_oak": {
+   "h": 56,
+   "path": "res://assets/sprites/world/objects/tree_big_oak.png",
+   "w": 40
+  },
+  "tree_cactus": {
+   "h": 32,
+   "path": "res://assets/sprites/world/objects/tree_cactus.png",
+   "w": 20
+  },
+  "tree_crystal_tree": {
+   "h": 40,
+   "path": "res://assets/sprites/world/objects/tree_crystal_tree.png",
+   "w": 28
+  },
+  "tree_dead_tree": {
+   "h": 42,
+   "path": "res://assets/sprites/world/objects/tree_dead_tree.png",
+   "w": 30
+  },
+  "tree_mushroom_tree": {
+   "h": 44,
+   "path": "res://assets/sprites/world/objects/tree_mushroom_tree.png",
+   "w": 32
+  },
+  "tree_oak": {
+   "h": 44,
+   "path": "res://assets/sprites/world/objects/tree_oak.png",
+   "w": 32
+  },
+  "tree_palm": {
+   "h": 44,
+   "path": "res://assets/sprites/world/objects/tree_palm.png",
+   "w": 32
+  },
+  "tree_pine": {
+   "h": 48,
+   "path": "res://assets/sprites/world/objects/tree_pine.png",
+   "w": 28
+  },
+  "tree_snow_pine": {
+   "h": 48,
+   "path": "res://assets/sprites/world/objects/tree_snow_pine.png",
+   "w": 28
+  },
+  "tree_swamp_tree": {
+   "h": 42,
+   "path": "res://assets/sprites/world/objects/tree_swamp_tree.png",
+   "w": 30
+  }
+ },
+ "tiles": {
+  "index": {
+   "ash_0": [
+    8,
+    1
+   ],
+   "ash_1": [
+    9,
+    1
+   ],
+   "ash_2": [
+    10,
+    1
+   ],
+   "ash_3": [
+    11,
+    1
+   ],
+   "cobble_0": [
+    4,
+    3
+   ],
+   "cobble_1": [
+    5,
+    3
+   ],
+   "cobble_2": [
+    6,
+    3
+   ],
+   "cobble_3": [
+    7,
+    3
+   ],
+   "deco_bone": [
+    15,
+    5
+   ],
+   "deco_ember": [
+    4,
+    6
+   ],
+   "deco_flower0": [
+    8,
+    5
+   ],
+   "deco_flower1": [
+    9,
+    5
+   ],
+   "deco_flower2": [
+    10,
+    5
+   ],
+   "deco_flower3": [
+    11,
+    5
+   ],
+   "deco_pebble": [
+    14,
+    5
+   ],
+   "deco_rubble": [
+    3,
+    6
+   ],
+   "deco_shell": [
+    0,
+    6
+   ],
+   "deco_shroom0": [
+    1,
+    6
+   ],
+   "deco_shroom1": [
+    2,
+    6
+   ],
+   "deco_snowdrift": [
+    5,
+    6
+   ],
+   "deco_tuft0": [
+    12,
+    5
+   ],
+   "deco_tuft1": [
+    13,
+    5
+   ],
+   "deep_water_0": [
+    0,
+    0
+   ],
+   "deep_water_1": [
+    1,
+    0
+   ],
+   "deep_water_2": [
+    2,
+    0
+   ],
+   "deep_water_3": [
+    3,
+    0
+   ],
+   "desert_0": [
+    4,
+    1
+   ],
+   "desert_1": [
+    5,
+    1
+   ],
+   "desert_2": [
+    6,
+    1
+   ],
+   "desert_3": [
+    7,
+    1
+   ],
+   "df_beach_0": [
+    0,
+    5
+   ],
+   "df_beach_1": [
+    1,
+    5
+   ],
+   "df_beach_2": [
+    2,
+    5
+   ],
+   "df_beach_3": [
+    3,
+    5
+   ],
+   "df_cave_0": [
+    12,
+    3
+   ],
+   "df_cave_1": [
+    13,
+    3
+   ],
+   "df_cave_2": [
+    14,
+    3
+   ],
+   "df_cave_3": [
+    15,
+    3
+   ],
+   "df_forest_0": [
+    4,
+    4
+   ],
+   "df_forest_1": [
+    5,
+    4
+   ],
+   "df_forest_2": [
+    6,
+    4
+   ],
+   "df_forest_3": [
+    7,
+    4
+   ],
+   "df_grass_0": [
+    12,
+    4
+   ],
+   "df_grass_1": [
+    13,
+    4
+   ],
+   "df_grass_2": [
+    14,
+    4
+   ],
+   "df_grass_3": [
+    15,
+    4
+   ],
+   "df_lava_0": [
+    0,
+    4
+   ],
+   "df_lava_1": [
+    1,
+    4
+   ],
+   "df_lava_2": [
+    2,
+    4
+   ],
+   "df_lava_3": [
+    3,
+    4
+   ],
+   "df_mushroom_0": [
+    8,
+    4
+   ],
+   "df_mushroom_1": [
+    9,
+    4
+   ],
+   "df_mushroom_2": [
+    10,
+    4
+   ],
+   "df_mushroom_3": [
+    11,
+    4
+   ],
+   "df_stone_0": [
+    4,
+    5
+   ],
+   "df_stone_1": [
+    5,
+    5
+   ],
+   "df_stone_2": [
+    6,
+    5
+   ],
+   "df_stone_3": [
+    7,
+    5
+   ],
+   "dirt_0": [
+    0,
+    3
+   ],
+   "dirt_1": [
+    1,
+    3
+   ],
+   "dirt_2": [
+    2,
+    3
+   ],
+   "dirt_3": [
+    3,
+    3
+   ],
+   "forest_0": [
+    12,
+    2
+   ],
+   "forest_1": [
+    13,
+    2
+   ],
+   "forest_2": [
+    14,
+    2
+   ],
+   "forest_3": [
+    15,
+    2
+   ],
+   "fr_ash_e": [
+    15,
+    10
+   ],
+   "fr_ash_n": [
+    12,
+    10
+   ],
+   "fr_ash_ne": [
+    1,
+    11
+   ],
+   "fr_ash_nw": [
+    0,
+    11
+   ],
+   "fr_ash_s": [
+    13,
+    10
+   ],
+   "fr_ash_se": [
+    3,
+    11
+   ],
+   "fr_ash_sw": [
+    2,
+    11
+   ],
+   "fr_ash_w": [
+    14,
+    10
+   ],
+   "fr_cobble_e": [
+    7,
+    14
+   ],
+   "fr_cobble_n": [
+    4,
+    14
+   ],
+   "fr_cobble_ne": [
+    9,
+    14
+   ],
+   "fr_cobble_nw": [
+    8,
+    14
+   ],
+   "fr_cobble_s": [
+    5,
+    14
+   ],
+   "fr_cobble_se": [
+    11,
+    14
+   ],
+   "fr_cobble_sw": [
+    10,
+    14
+   ],
+   "fr_cobble_w": [
+    6,
+    14
+   ],
+   "fr_deep_water_e": [
+    15,
+    7
+   ],
+   "fr_deep_water_n": [
+    12,
+    7
+   ],
+   "fr_deep_water_ne": [
+    1,
+    8
+   ],
+   "fr_deep_water_nw": [
+    0,
+    8
+   ],
+   "fr_deep_water_s": [
+    13,
+    7
+   ],
+   "fr_deep_water_se": [
+    3,
+    8
+   ],
+   "fr_deep_water_sw": [
+    2,
+    8
+   ],
+   "fr_deep_water_w": [
+    14,
+    7
+   ],
+   "fr_desert_e": [
+    7,
+    10
+   ],
+   "fr_desert_n": [
+    4,
+    10
+   ],
+   "fr_desert_ne": [
+    9,
+    10
+   ],
+   "fr_desert_nw": [
+    8,
+    10
+   ],
+   "fr_desert_s": [
+    5,
+    10
+   ],
+   "fr_desert_se": [
+    11,
+    10
+   ],
+   "fr_desert_sw": [
+    10,
+    10
+   ],
+   "fr_desert_w": [
+    6,
+    10
+   ],
+   "fr_dirt_e": [
+    15,
+    13
+   ],
+   "fr_dirt_n": [
+    12,
+    13
+   ],
+   "fr_dirt_ne": [
+    1,
+    14
+   ],
+   "fr_dirt_nw": [
+    0,
+    14
+   ],
+   "fr_dirt_s": [
+    13,
+    13
+   ],
+   "fr_dirt_se": [
+    3,
+    14
+   ],
+   "fr_dirt_sw": [
+    2,
+    14
+   ],
+   "fr_dirt_w": [
+    14,
+    13
+   ],
+   "fr_forest_e": [
+    7,
+    13
+   ],
+   "fr_forest_n": [
+    4,
+    13
+   ],
+   "fr_forest_ne": [
+    9,
+    13
+   ],
+   "fr_forest_nw": [
+    8,
+    13
+   ],
+   "fr_forest_s": [
+    5,
+    13
+   ],
+   "fr_forest_se": [
+    11,
+    13
+   ],
+   "fr_forest_sw": [
+    10,
+    13
+   ],
+   "fr_forest_w": [
+    6,
+    13
+   ],
+   "fr_grass_e": [
+    15,
+    12
+   ],
+   "fr_grass_n": [
+    12,
+    12
+   ],
+   "fr_grass_ne": [
+    1,
+    13
+   ],
+   "fr_grass_nw": [
+    0,
+    13
+   ],
+   "fr_grass_s": [
+    13,
+    12
+   ],
+   "fr_grass_se": [
+    3,
+    13
+   ],
+   "fr_grass_sw": [
+    2,
+    13
+   ],
+   "fr_grass_w": [
+    14,
+    12
+   ],
+   "fr_lava_e": [
+    15,
+    8
+   ],
+   "fr_lava_n": [
+    12,
+    8
+   ],
+   "fr_lava_ne": [
+    1,
+    9
+   ],
+   "fr_lava_nw": [
+    0,
+    9
+   ],
+   "fr_lava_s": [
+    13,
+    8
+   ],
+   "fr_lava_se": [
+    3,
+    9
+   ],
+   "fr_lava_sw": [
+    2,
+    9
+   ],
+   "fr_lava_w": [
+    14,
+    8
+   ],
+   "fr_mushroom_e": [
+    7,
+    12
+   ],
+   "fr_mushroom_n": [
+    4,
+    12
+   ],
+   "fr_mushroom_ne": [
+    9,
+    12
+   ],
+   "fr_mushroom_nw": [
+    8,
+    12
+   ],
+   "fr_mushroom_s": [
+    5,
+    12
+   ],
+   "fr_mushroom_se": [
+    11,
+    12
+   ],
+   "fr_mushroom_sw": [
+    10,
+    12
+   ],
+   "fr_mushroom_w": [
+    6,
+    12
+   ],
+   "fr_plaza_e": [
+    15,
+    14
+   ],
+   "fr_plaza_n": [
+    12,
+    14
+   ],
+   "fr_plaza_ne": [
+    1,
+    15
+   ],
+   "fr_plaza_nw": [
+    0,
+    15
+   ],
+   "fr_plaza_s": [
+    13,
+    14
+   ],
+   "fr_plaza_se": [
+    3,
+    15
+   ],
+   "fr_plaza_sw": [
+    2,
+    15
+   ],
+   "fr_plaza_w": [
+    14,
+    14
+   ],
+   "fr_sand_e": [
+    15,
+    9
+   ],
+   "fr_sand_n": [
+    12,
+    9
+   ],
+   "fr_sand_ne": [
+    1,
+    10
+   ],
+   "fr_sand_nw": [
+    0,
+    10
+   ],
+   "fr_sand_s": [
+    13,
+    9
+   ],
+   "fr_sand_se": [
+    3,
+    10
+   ],
+   "fr_sand_sw": [
+    2,
+    10
+   ],
+   "fr_sand_w": [
+    14,
+    9
+   ],
+   "fr_snow_e": [
+    7,
+    11
+   ],
+   "fr_snow_n": [
+    4,
+    11
+   ],
+   "fr_snow_ne": [
+    9,
+    11
+   ],
+   "fr_snow_nw": [
+    8,
+    11
+   ],
+   "fr_snow_s": [
+    5,
+    11
+   ],
+   "fr_snow_se": [
+    11,
+    11
+   ],
+   "fr_snow_sw": [
+    10,
+    11
+   ],
+   "fr_snow_w": [
+    6,
+    11
+   ],
+   "fr_swamp_e": [
+    15,
+    11
+   ],
+   "fr_swamp_n": [
+    12,
+    11
+   ],
+   "fr_swamp_ne": [
+    1,
+    12
+   ],
+   "fr_swamp_nw": [
+    0,
+    12
+   ],
+   "fr_swamp_s": [
+    13,
+    11
+   ],
+   "fr_swamp_se": [
+    3,
+    12
+   ],
+   "fr_swamp_sw": [
+    2,
+    12
+   ],
+   "fr_swamp_w": [
+    14,
+    11
+   ],
+   "fr_swamp_water_e": [
+    7,
+    9
+   ],
+   "fr_swamp_water_n": [
+    4,
+    9
+   ],
+   "fr_swamp_water_ne": [
+    9,
+    9
+   ],
+   "fr_swamp_water_nw": [
+    8,
+    9
+   ],
+   "fr_swamp_water_s": [
+    5,
+    9
+   ],
+   "fr_swamp_water_se": [
+    11,
+    9
+   ],
+   "fr_swamp_water_sw": [
+    10,
+    9
+   ],
+   "fr_swamp_water_w": [
+    6,
+    9
+   ],
+   "fr_water_e": [
+    7,
+    8
+   ],
+   "fr_water_n": [
+    4,
+    8
+   ],
+   "fr_water_ne": [
+    9,
+    8
+   ],
+   "fr_water_nw": [
+    8,
+    8
+   ],
+   "fr_water_s": [
+    5,
+    8
+   ],
+   "fr_water_se": [
+    11,
+    8
+   ],
+   "fr_water_sw": [
+    10,
+    8
+   ],
+   "fr_water_w": [
+    6,
+    8
+   ],
+   "grass_0": [
+    8,
+    2
+   ],
+   "grass_1": [
+    9,
+    2
+   ],
+   "grass_2": [
+    10,
+    2
+   ],
+   "grass_3": [
+    11,
+    2
+   ],
+   "lava_0": [
+    8,
+    0
+   ],
+   "lava_1": [
+    9,
+    0
+   ],
+   "lava_2": [
+    10,
+    0
+   ],
+   "lava_3": [
+    11,
+    0
+   ],
+   "mushroom_0": [
+    4,
+    2
+   ],
+   "mushroom_1": [
+    5,
+    2
+   ],
+   "mushroom_2": [
+    6,
+    2
+   ],
+   "mushroom_3": [
+    7,
+    2
+   ],
+   "pit": [
+    10,
+    7
+   ],
+   "pit_edge": [
+    11,
+    7
+   ],
+   "plaza_0": [
+    8,
+    3
+   ],
+   "plaza_1": [
+    9,
+    3
+   ],
+   "plaza_2": [
+    10,
+    3
+   ],
+   "plaza_3": [
+    11,
+    3
+   ],
+   "sand_0": [
+    0,
+    1
+   ],
+   "sand_1": [
+    1,
+    1
+   ],
+   "sand_2": [
+    2,
+    1
+   ],
+   "sand_3": [
+    3,
+    1
+   ],
+   "snow_0": [
+    12,
+    1
+   ],
+   "snow_1": [
+    13,
+    1
+   ],
+   "snow_2": [
+    14,
+    1
+   ],
+   "snow_3": [
+    15,
+    1
+   ],
+   "swamp_0": [
+    0,
+    2
+   ],
+   "swamp_1": [
+    1,
+    2
+   ],
+   "swamp_2": [
+    2,
+    2
+   ],
+   "swamp_3": [
+    3,
+    2
+   ],
+   "swamp_water_0": [
+    12,
+    0
+   ],
+   "swamp_water_1": [
+    13,
+    0
+   ],
+   "swamp_water_2": [
+    14,
+    0
+   ],
+   "swamp_water_3": [
+    15,
+    0
+   ],
+   "wall_brick_front": [
+    9,
+    6
+   ],
+   "wall_brick_top": [
+    8,
+    6
+   ],
+   "wall_cave_front": [
+    9,
+    7
+   ],
+   "wall_cave_top": [
+    8,
+    7
+   ],
+   "wall_coral_front": [
+    3,
+    7
+   ],
+   "wall_coral_top": [
+    2,
+    7
+   ],
+   "wall_crystal_front": [
+    13,
+    6
+   ],
+   "wall_crystal_top": [
+    12,
+    6
+   ],
+   "wall_hedge_front": [
+    1,
+    7
+   ],
+   "wall_hedge_top": [
+    0,
+    7
+   ],
+   "wall_mushroom_front": [
+    5,
+    7
+   ],
+   "wall_mushroom_top": [
+    4,
+    7
+   ],
+   "wall_obsidian_front": [
+    15,
+    6
+   ],
+   "wall_obsidian_top": [
+    14,
+    6
+   ],
+   "wall_stone_front": [
+    7,
+    6
+   ],
+   "wall_stone_top": [
+    6,
+    6
+   ],
+   "wall_town_front": [
+    7,
+    7
+   ],
+   "wall_town_top": [
+    6,
+    7
+   ],
+   "wall_wood_front": [
+    11,
+    6
+   ],
+   "wall_wood_top": [
+    10,
+    6
+   ],
+   "water_0": [
+    4,
+    0
+   ],
+   "water_1": [
+    5,
+    0
+   ],
+   "water_2": [
+    6,
+    0
+   ],
+   "water_3": [
+    7,
+    0
+   ]
+  },
+  "path": "res://assets/sprites/world/tiles.png",
+  "priority": {
+   "ash": 5,
+   "cobble": 12,
+   "deep_water": 0,
+   "desert": 4,
+   "df_beach": 20,
+   "df_cave": 20,
+   "df_forest": 20,
+   "df_grass": 20,
+   "df_lava": 20,
+   "df_mushroom": 20,
+   "df_stone": 20,
+   "dirt": 11,
+   "forest": 10,
+   "grass": 9,
+   "lava": 2,
+   "mushroom": 8,
+   "plaza": 13,
+   "sand": 3,
+   "snow": 6,
+   "swamp": 7,
+   "swamp_water": 1,
+   "water": 1
+  },
+  "tile": 16
+ },
+ "weapons": {
+  "bow": {
+   "h": 24,
+   "path": "res://assets/sprites/weapons/bow.png",
+   "w": 10
+  },
+  "dagger": {
+   "h": 6,
+   "path": "res://assets/sprites/weapons/dagger.png",
+   "w": 14
+  },
+  "grimoire": {
+   "h": 12,
+   "path": "res://assets/sprites/weapons/grimoire.png",
+   "w": 12
+  },
+  "gun": {
+   "h": 10,
+   "path": "res://assets/sprites/weapons/gun.png",
+   "w": 18
+  },
+  "hammer": {
+   "h": 14,
+   "path": "res://assets/sprites/weapons/hammer.png",
+   "w": 22
+  },
+  "spear": {
+   "h": 8,
+   "path": "res://assets/sprites/weapons/spear.png",
+   "w": 30
+  },
+  "sword": {
+   "h": 8,
+   "path": "res://assets/sprites/weapons/sword.png",
+   "w": 22
+  },
+  "wand": {
+   "h": 8,
+   "path": "res://assets/sprites/weapons/wand.png",
+   "w": 18
+  }
+ }
+}

@@ -1,0 +1,55 @@
+; Engine configuration file.
+; It's best edited using the editor UI and not directly,
+; since the parameters that go here are not all obvious.
+;
+; Format:
+;   [section] ; section goes between []
+;   param=value ; assign values to parameters
+
+config_version=5
+
+[application]
+
+config/name="Hollowgate"
+config/description="2.5D pixel-art action RPG / survival with hidden dungeons and a dungeon editor."
+run/main_scene="res://scenes/main.tscn"
+config/features=PackedStringArray("4.4", "GL Compatibility")
+config/icon="res://icon.png"
+
+[autoload]
+
+GameData="*res://src/autoload/game_data.gd"
+Art="*res://src/autoload/art.gd"
+Settings="*res://src/autoload/settings.gd"
+Sfx="*res://src/autoload/sfx.gd"
+Game="*res://src/autoload/game.gd"
+
+[display]
+
+window/size/viewport_width=1280
+window/size/viewport_height=720
+window/stretch/mode="canvas_items"
+window/stretch/aspect="expand"
+
+[gui]
+
+timers/tooltip_delay_sec=0.2
+common/drop_mouse_on_gui_input_disabled=true
+
+[layer_names]
+
+2d_physics/layer_1="walls"
+2d_physics/layer_2="low_obstacles"
+2d_physics/layer_3="player"
+2d_physics/layer_4="enemies"
+
+[physics]
+
+2d/default_gravity=0.0
+
+[rendering]
+
+textures/canvas_textures/default_texture_filter=0
+renderer/rendering_method="gl_compatibility"
+renderer/rendering_method.mobile="gl_compatibility"
+environment/defaults/default_clear_color=Color(0.043, 0.039, 0.07, 1)
