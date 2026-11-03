@@ -28,11 +28,22 @@ var map_image: Image
 var visited_rooms: Dictionary = {}
 var floor_name := "df_cave"
 var liquid_default := "water"
+## Test runs: who runs the dungeon. `hero_plays` false = the hero watches (spectator camera) while
+## up to 3 adventurers (`runner_ids`) run it as a party. Party members join the hero when it plays.
+var hero_plays := true
+var runner_ids: Array = []
+var runners: Array = []
+var run_time := 0.0
+var run_kills := 0
+var run_over := false
+var _over_t := -1.0
 
 
-func setup(d: Dictionary, test: bool) -> void:
+func setup(d: Dictionary, test: bool, opts: Dictionary = {}) -> void:
 	dungeon = d
 	test_run = test
+	hero_plays = bool(opts.get("hero", true))
+	runner_ids = opts.get("npcs", [])
 	if d.get("custom", false) or d.has("design"):
 		design = d["design"].duplicate(true)
 	else:
@@ -51,17 +62,128 @@ func _ready() -> void:
 	amb.set_kind({"lava": "embers", "mushroom": "spores", "forest": "leaves", "beach": "motes", "grass": "motes"}.get(design.get("biome", "cave"), "motes"))
 	spawn_player(room_center_px(start_cell) + Vector2(0, 26))
 	visited_rooms[start_cell] = true
-	Game.toast("Entered %s  [Rank %d]%s" % [design.get("name", "Dungeon"), int(design.get("rank", 1)), "  (TEST RUN)" if test_run else ""], Color("c79bff"))
+	if test_run and not runner_ids.is_empty():
+		_spawn_runners()
+	if test_run and not hero_plays:
+		start_spectating()
+		Game.toast("Watching the test run of %s  [Rank %d]. 1-3: follow a runner, Space: free camera, WASD: move it, wheel: zoom, Esc: menu." % [
+			design.get("name", "Dungeon"), int(design.get("rank", 1))], Color("c79bff"))
+	else:
+		Game.toast("Entered %s  [Rank %d]%s" % [design.get("name", "Dungeon"), int(design.get("rank", 1)), "  (TEST RUN)" if test_run else ""], Color("c79bff"))
 
 
 func _process(delta: float) -> void:
 	super._process(delta)
 	if not test_run:
 		time_tick(delta)
+	elif not run_over:
+		run_time += delta
 	_active_t -= delta
 	if _active_t <= 0.0:
 		_active_t = 0.4
 		_update_activation()
+		if test_run:
+			_check_test_run()
+	if _over_t > 0.0:
+		_over_t -= delta
+		if _over_t <= 0.0 and Game.main:
+			Game.main.end_test_run("cleared" if cleared else "defeated", run_summary())
+
+
+# ===================================================================== test runs with adventurers
+func _spawn_runners() -> void:
+	var base := room_center_px(start_cell) + Vector2(0, 26)
+	var i := 0
+	for id in runner_ids:
+		var n := NpcWorld.find(int(id))
+		if n.is_empty():
+			continue
+		var a := spawn_adventurer(n, base + Vector2(-26 + 26 * i, 18))
+		a.hp = a.max_hp
+		a.mp = a.max_mp
+		a.set_meta("runner", true)
+		runners.append(a)
+		i += 1
+	_assign_run_roles()
+
+
+## The first runner still standing leads (walks room by room to the boss); the others follow it.
+## When the hero plays, the adventurers follow the hero instead.
+func _assign_run_roles() -> void:
+	var lead: Adventurer = null
+	for a in runners:
+		if not is_instance_valid(a) or a.dead:
+			continue
+		if hero_plays:
+			a.mode = "follow"
+			a.leader = player
+		elif lead == null:
+			lead = a
+			a.mode = "run"
+			a.leader = null
+		else:
+			a.mode = "follow"
+			a.leader = lead
+
+
+func _alive_runners() -> Array:
+	var out := []
+	for a in runners:
+		if is_instance_valid(a) and not a.dead:
+			out.append(a)
+	return out
+
+
+func _check_test_run() -> void:
+	if run_over or hero_plays:
+		return
+	var alive := _alive_runners()
+	if alive.is_empty():
+		run_over = true
+		_over_t = 3.0
+		float_text(view_center() + Vector2(0, -50), "PARTY DEFEATED", Color("ff6a6a"), 2.0)
+		return
+	var lead_ok := false
+	for a in alive:
+		if a.mode == "run":
+			lead_ok = true
+	if not lead_ok:
+		_assign_run_roles()
+
+
+func on_monster_died(m: Monster, killer) -> void:
+	if m.summoner == null:
+		run_kills += 1
+	super.on_monster_died(m, killer)
+
+
+func _room_label(c: Vector2i) -> String:
+	if c == start_cell:
+		return "the start room"
+	if c == boss_cell:
+		return "the boss room"
+	return "room (%d, %d)" % [c.x + 1, c.y + 1]
+
+
+## A short report of the test run for the designer.
+func run_summary() -> String:
+	var total: int = design["rooms"].size()
+	var lines := []
+	lines.append("[b]%s[/b]  (rank %d)" % [design.get("name", "Dungeon"), int(design.get("rank", 1))])
+	lines.append("Result: %s" % ("[color=#7be05a]Cleared — the boss was defeated![/color]" if cleared else "[color=#ff7a7a]Not cleared[/color]"))
+	lines.append("Time: %s    Rooms explored: %d / %d    Monsters defeated: %d" % [UI.fmt_time(run_time), visited_rooms.size(), total, run_kills])
+	if boss and is_instance_valid(boss) and not boss.dead:
+		lines.append("Boss %s: %d%% HP left" % [boss.display_name, int(100.0 * boss.hp / maxf(1.0, boss.max_hp))])
+	var who := []
+	if hero_plays and player and is_instance_valid(player):
+		who.append("%s (you)" % Game.player["name"])
+	for a in runners:
+		if not is_instance_valid(a):
+			continue
+		var st := ("down in " + _room_label(cell_of(a.global_position))) if a.dead else "%d%% HP" % int(100.0 * a.hp / maxf(1.0, a.max_hp))
+		who.append("%s Lv%d %s — %s" % [a.display_name, int(a.npc["level"]), GameData.CLASSES[a.cls]["name"], st])
+	lines.append("Runners: " + ", ".join(who))
+	return "\n".join(lines)
 
 
 # ===================================================================== layout
@@ -489,6 +611,45 @@ func can_aggro(m: Actor, t: Actor) -> bool:
 	return room_of(t.global_position) == m.room_id or m.global_position.distance_to(t.global_position) < 90.0
 
 
+func is_walkable(pos: Vector2) -> bool:
+	var t := get_t(int(floor(pos.x / T)), int(floor(pos.y / T)))
+	return not _blocked_t(t)
+
+
+## Next room on the shortest door-to-door route from `from` to `to` (BFS on the room grid).
+## Returns `from` when already there and Vector2i(-99, -99) when there is no route.
+func next_cell_toward(from: Vector2i, to: Vector2i) -> Vector2i:
+	if from == to:
+		return from
+	if not design["rooms"].has(from) or not design["rooms"].has(to):
+		return Vector2i(-99, -99)
+	var prev := {from: from}
+	var q := [from]
+	while not q.is_empty():
+		var c: Vector2i = q.pop_front()
+		if c == to:
+			break
+		for dn in DungeonGen.DIRS:
+			var nb: Vector2i = c + DungeonGen.DIRS[dn]
+			if prev.has(nb) or not design["rooms"].has(nb) or not _linked(c, dn):
+				continue
+			prev[nb] = c
+			q.append(nb)
+	if not prev.has(to):
+		return Vector2i(-99, -99)
+	var step := to
+	while prev[step] != from:
+		step = prev[step]
+	return step
+
+
+func _linked(c: Vector2i, dn: String) -> bool:
+	var nb: Vector2i = c + DungeonGen.DIRS[dn]
+	if dn in ["e", "s"]:
+		return design["rooms"][c]["doors"].get(dn, false)
+	return design["rooms"][nb]["doors"].get(DungeonGen.OPP[dn], false)
+
+
 func path_dir(m: Actor, to: Vector2) -> Vector2:
 	if m.hover > 0.0 or not ray_blocked(m.global_position, to, true):
 		return (to - m.global_position).normalized()
@@ -513,23 +674,35 @@ func path_dir(m: Actor, to: Vector2) -> Vector2:
 	return (to - m.global_position).normalized()
 
 
+## Monsters wake up around everyone on the hero's side (the hero, party members, test runners) and
+## are drawn around the camera.
 func _update_activation() -> void:
 	if player == null or not is_instance_valid(player):
 		return
-	var pc := cell_of(player.global_position)
-	if design["rooms"].has(pc) and not visited_rooms.has(pc):
-		visited_rooms[pc] = true
-		if pc == boss_cell and is_instance_valid(boss) and not boss.dead:
-			Game.toast("%s awaits!" % boss.display_name, Color("ff6a6a"))
-			Sfx.play("roar")
-			shake(4.0, 0.5)
+	var cells := []
+	for a in focus_actors():
+		var c := cell_of(a.global_position)
+		if not c in cells:
+			cells.append(c)
+	var vc := cell_of(view_center())
+	for pc in cells:
+		if design["rooms"].has(pc) and not visited_rooms.has(pc):
+			visited_rooms[pc] = true
+			if pc == boss_cell and is_instance_valid(boss) and not boss.dead:
+				Game.toast("%s awaits!" % boss.display_name, Color("ff6a6a"))
+				Sfx.play("roar")
+				shake(4.0, 0.5)
 	for m in get_tree().get_nodes_in_group("monsters"):
 		if not is_instance_valid(m) or m.dead:
 			continue
 		var mc := cell_of(m.global_position)
-		var near := absi(mc.x - pc.x) + absi(mc.y - pc.y) <= 1
+		var near := false
+		for pc in cells:
+			if absi(mc.x - pc.x) + absi(mc.y - pc.y) <= 1:
+				near = true
+				break
 		m.set_physics_process(near)
-		m.visible = near or absi(mc.x - pc.x) + absi(mc.y - pc.y) <= 2
+		m.visible = near or absi(mc.x - vc.x) + absi(mc.y - vc.y) <= 2
 
 
 func player_light_energy() -> float:
@@ -537,7 +710,7 @@ func player_light_energy() -> float:
 
 
 func boss_visible() -> bool:
-	return boss != null and is_instance_valid(boss) and not boss.dead and player and cell_of(player.global_position) == boss_cell
+	return boss != null and is_instance_valid(boss) and not boss.dead and player and cell_of(view_center()) == boss_cell
 
 
 # ===================================================================== events
@@ -558,6 +731,9 @@ func _on_boss_died(_m) -> void:
 	VFX.particles(self, chest.position, Color("fee761"), 40, 120.0, 1.2, Vector2(0, -30), "spark", 0.7)
 	Game.toast("DUNGEON CLEARED! The boss's treasure has appeared.", Color("fee761"))
 	Sfx.play("levelup")
+	if test_run and not hero_plays and not run_over:
+		run_over = true
+		_over_t = 4.0
 	if not test_run:
 		Game.on_dungeon_cleared(int(design.get("rank", 1)))
 		for d in Game.world["dungeons"]:
@@ -585,8 +761,12 @@ func on_player_died() -> void:
 		Game.main.leave_dungeon("dead", cleared)
 
 
-func teleport_random_room() -> void:
-	var cur := cell_of(player.global_position)
+## Teleport rune: sends whoever stepped on it (default: the hero) to a random other room.
+func teleport_random_room(who = null) -> void:
+	var a = who if who != null else player
+	if a == null or not is_instance_valid(a):
+		return
+	var cur := cell_of(a.global_position)
 	var opts := []
 	for c in design["rooms"]:
 		if c != cur:
@@ -597,32 +777,38 @@ func teleport_random_room() -> void:
 	var rng := RandomNumberGenerator.new()
 	rng.randomize()
 	var spot := _pick_spot(c2, {}, rng, 2)
-	player.global_position = tile_px(spot)
-	camera.global_position = player.global_position
-	camera.reset_smoothing()
-	VFX.particles(self, player.global_position + Vector2(0, -10), Color("b088ff"), 24, 70.0, 0.6, Vector2(0, -30), "spark", 0.6)
+	a.global_position = tile_px(spot)
+	if a == player and not spectating():
+		camera.global_position = player.global_position
+		camera.reset_smoothing()
+	VFX.particles(self, a.global_position + Vector2(0, -10), Color("b088ff"), 24, 70.0, 0.6, Vector2(0, -30), "spark", 0.6)
 
 
-func player_fall(pos: Vector2, rid: int) -> void:
-	if player == null:
+## Pitfall: whoever fell (default: the hero) drops to a random spot of the room below and takes 10% max HP.
+func player_fall(pos: Vector2, rid: int, who = null) -> void:
+	var a = who if who != null else player
+	if a == null or not is_instance_valid(a):
 		return
-	player.lock(1.0)
-	player.invuln_t = maxf(player.invuln_t, 1.2)
-	player.global_position = pos
-	var tw := player.create_tween()
-	tw.tween_property(player.visual, "scale", Vector2(0.1, 0.1), 0.5)
-	tw.parallel().tween_property(player.visual, "modulate:a", 0.0, 0.5)
+	a.lock(1.0)
+	a.invuln_t = maxf(a.invuln_t, 1.2)
+	a.global_position = pos
+	var tw: Tween = a.create_tween()
+	tw.tween_property(a.visual, "scale", Vector2(0.1, 0.1), 0.5)
+	tw.parallel().tween_property(a.visual, "modulate:a", 0.0, 0.5)
 	tw.tween_callback(func():
+		if not is_instance_valid(a):
+			return
 		var gw := int(design["grid"].x)
 		var c := Vector2i(rid % gw, rid / gw) if rid >= 0 else cell_of(pos)
 		var rng := RandomNumberGenerator.new()
 		rng.randomize()
 		var spot := _pick_spot(c, {}, rng, 2) if design["rooms"].has(c) else Vector2i(pos / T)
-		player.global_position = tile_px(spot)
-		player.visual.scale = Vector2.ONE
-		player.visual.modulate.a = 1.0
-		var dmg := int(player.max_hp * 0.1)
-		if not test_run or player.hp > dmg + 1:
-			player.hp = maxf(1.0, player.hp - dmg)
-			float_text(player.global_position + Vector2(0, -30), "-%d (fell!)" % dmg, Color("ff6a6a"), 1.0)
-		shake(3.0, 0.2))
+		a.global_position = tile_px(spot)
+		a.visual.scale = Vector2.ONE
+		a.visual.modulate.a = 1.0
+		var dmg := int(a.max_hp * 0.1)
+		if not test_run or a.hp > dmg + 1:
+			a.hp = maxf(1.0, a.hp - dmg)
+			float_text(a.global_position + Vector2(0, -30), "-%d (fell!)" % dmg, Color("ff6a6a"), 1.0)
+		if a == player:
+			shake(3.0, 0.2))

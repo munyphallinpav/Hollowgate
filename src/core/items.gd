@@ -342,4 +342,6 @@ static func tooltip(it: Dictionary, compare: Dictionary = {}) -> String:
 		if int(it.get("qty", 1)) > 1:
 			lines.append("[color=#99a]Quantity: %d[/color]" % int(it["qty"]))
 		lines.append("[color=#e8c860]Sell: %d g[/color]" % sell_price(it))
+	if it.get("locked", false):
+		lines.append("[color=#ffd27a]Locked — never sold, discarded or salvaged (right-click in your bag to unlock)[/color]")
 	return "\n".join(lines)

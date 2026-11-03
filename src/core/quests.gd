@@ -70,6 +70,13 @@ static func progress_text(q: Dictionary) -> String:
 	return "%d / %d" % [mini(have, int(q["need"])), int(q["need"])]
 
 
+## Completion check for an NPC adventurer (gather quests count the NPC's own bag).
+static func is_complete_for(q: Dictionary, n: Dictionary) -> bool:
+	if q["type"] == "gather":
+		return NpcWorld.count(n, q["target"]) >= int(q["need"])
+	return int(q.get("have", 0)) >= int(q["need"])
+
+
 static func is_complete(q: Dictionary) -> bool:
 	if q["type"] == "gather":
 		return Game.count_item(q["target"]) >= int(q["need"])

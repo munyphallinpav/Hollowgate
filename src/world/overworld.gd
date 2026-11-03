@@ -17,6 +17,7 @@ var portal_nodes: Dictionary = {}
 var lamps: Array = []
 var _was_night := false
 var ambient: Ambient
+var _adv_t := 0.0
 
 const BUILDINGS := [
 	# sprite, tile x (bottom centre), tile y (bottom row), npc sprite, role, npc name
@@ -90,6 +91,112 @@ func _process(delta: float) -> void:
 		dungeon_t = 1.5
 		_ensure_dungeons()
 		_update_portals()
+	_adv_t -= delta
+	if _adv_t <= 0.0:
+		_adv_t = 0.5
+		_update_adventurers()
+	_challenge_t -= delta
+	if _challenge_t <= 0.0:
+		_challenge_t = 20.0
+		_npc_challenge()
+
+
+var _challenge_t := 30.0
+
+
+## Now and then a confident adventurer in town challenges the hero to a duel (at most once a day each).
+## It walks up with a "!" over its head; talk to it to answer.
+func _npc_challenge() -> void:
+	if Duel.active or Game.test_run or player == null or not is_instance_valid(player) or not is_town():
+		return
+	var now := float(Game.world.get("total", 0.0))
+	if now < float(Game.player.get("duel_ask_t", 0.0)):
+		return
+	var day := int(Game.world.get("day", 1))
+	for id in NpcWorld.actors:
+		var a = NpcWorld.actors[id]
+		if a == null or not is_instance_valid(a) or a.dead or a.mode != "routine":
+			continue
+		var n: Dictionary = a.npc
+		if n["state"] != "town" or Social.in_party(n) or n.has("challenge") or int(n.get("challenged_day", -1)) == day:
+			continue
+		if a.global_position.distance_to(player.global_position) > 240.0:
+			continue
+		var ch := Duel.npc_win_chance(n)
+		if ch < 0.38 or randf() > 0.2 + 0.4 * float(n.get("bravery", 0.5)):
+			continue
+		var gold := int(float(n["gold"]) * randf_range(0.04, 0.12) / 10.0) * 10
+		if gold > int(Game.player["gold"]):
+			gold = int(Game.player["gold"] / 10) * 10
+		n["challenged_day"] = day
+		n["challenge"] = {"gold": maxi(0, gold), "until": now + 90.0}
+		Game.player["duel_ask_t"] = now + 300.0
+		Game.toast("%s challenges you to a duel%s! Talk to them (%s) to answer." % [n["name"],
+			(" for %d gold" % gold) if gold > 0 else "", Settings.action_text("interact")], Color("fee761"))
+		Sfx.play("click")
+		return
+
+
+# ===================================================================== NPC adventurers
+const ADV_SPAWN_DIST := 520.0
+const ADV_DESPAWN_DIST := 780.0
+const ADV_MAX_LIVE := 12
+
+
+## NPC adventurers near the hero become real actors; far away they go back to the simulation.
+func _update_adventurers() -> void:
+	if player == null or not is_instance_valid(player) or not Game.world.has("npcs"):
+		return
+	var pp := player.global_position
+	var cands := []
+	for n in NpcWorld.npcs():
+		if Social.in_party(n):
+			continue  # party members travel with the hero (Level.sync_party)
+		var eligible: bool = n["state"] in ["town", "travel", "hunt", "return", "follow"]
+		var a = NpcWorld.actor_of(n)
+		if a:
+			if not eligible or a.global_position.distance_to(pp) > ADV_DESPAWN_DIST:
+				_despawn_adventurer(n)
+			continue
+		var pos := Vector2(n["pos"][0], n["pos"][1])
+		var d := pos.distance_to(pp)
+		if eligible and d < ADV_SPAWN_DIST and float(n.get("hp_frac", 1.0)) > 0.0:
+			cands.append([d, n])
+	cands.sort_custom(func(x, y): return x[0] < y[0])
+	var live := 0
+	for id in NpcWorld.actors:
+		if is_instance_valid(NpcWorld.actors[id]):
+			live += 1
+	for c in cands:
+		if live >= ADV_MAX_LIVE:
+			break
+		_spawn_adventurer(c[1])
+		live += 1
+	# members of adventurer parties walk with their leader (or wait in the simulation for it)
+	for n in NpcWorld.npcs():
+		if n["state"] != "follow" or Social.in_party(n):
+			continue
+		var a = NpcWorld.actor_of(n)
+		if a == null:
+			continue
+		var la = NpcWorld.actor_of(Social.npc_party_leader(n)) if Social.in_npc_party(n) else null
+		if la != null:
+			a.mode = "follow"
+			a.leader = la
+		else:
+			_despawn_adventurer(n)
+
+
+func _spawn_adventurer(n: Dictionary) -> void:
+	spawn_adventurer(n, Vector2(n["pos"][0], n["pos"][1]))
+
+
+func _despawn_adventurer(n: Dictionary) -> void:
+	despawn_adventurer(n)
+
+
+func _snap_walkable(p: Vector2) -> Vector2:
+	return snap_walkable(p)
 
 
 # ===================================================================== chunks

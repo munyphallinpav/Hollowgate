@@ -54,6 +54,12 @@ func _draw() -> void:
 				var c2 := color
 				c2.a *= 0.25 * (1.0 - p)
 				draw_circle(Vector2.ZERO, r, c2)
+		"static_ring":
+			# a persistent ground ring (duel arena): steady size, gently pulsing
+			var c0 := color
+			c0.a *= 0.55 + 0.25 * sin(t * 3.0)
+			_draw_ellipse_outline(radius, radius * 0.55, c0, width)
+			_draw_ellipse_outline(radius - 5.0, (radius - 5.0) * 0.55, Color(c0.r, c0.g, c0.b, c0.a * 0.4), 1.0)
 		"ellipse_ring":
 			var r2 := lerpf(radius2, radius, ease(p, 0.4))
 			var c3 := color

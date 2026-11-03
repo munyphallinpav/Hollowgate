@@ -47,6 +47,11 @@ static func theme() -> Theme:
 	t.set_color("font_hover_color", "Button", Color("fff4d8"))
 	t.set_color("font_disabled_color", "Button", Color("6a6588"))
 	t.set_color("font_color", "Label", TEXT)
+	# clearly visible check boxes on the dark panels
+	t.set_icon("unchecked", "CheckBox", _check_icon(false, Color("b9b2da")))
+	t.set_icon("checked", "CheckBox", _check_icon(true, Color("ffe9a8")))
+	t.set_icon("unchecked_disabled", "CheckBox", _check_icon(false, Color("55516e")))
+	t.set_icon("checked_disabled", "CheckBox", _check_icon(true, Color("7d7896")))
 	t.set_color("default_color", "RichTextLabel", TEXT)
 	t.set_stylebox("normal", "LineEdit", sbox(Color("0f0e1c"), Color("5a547e"), 1, 3, 6))
 	t.set_stylebox("focus", "LineEdit", sbox(Color("0f0e1c"), GOLD, 1, 3, 6))
@@ -86,6 +91,36 @@ static func theme() -> Theme:
 	t.set_stylebox("normal", "SpinBox", sbox(Color("0f0e1c"), Color("5a547e"), 1, 3, 4))
 	_theme = t
 	return t
+
+
+## Opens a popup menu with its corner at the mouse pointer. Works whether pop-ups are drawn inside the game
+## window (positions in view coordinates) or as separate OS windows (screen pixels), at any window size / scale.
+static func popup_at_mouse(pm: PopupMenu, from: Control) -> void:
+	var vp := from.get_viewport()
+	var pos := vp.get_mouse_position()
+	var rect := Rect2i(Vector2i(pos.round()), Vector2i(1, 1))
+	if not vp.gui_embed_subwindows:
+		var screen := Vector2(from.get_window().position) + vp.get_final_transform() * pos
+		rect = Rect2i(Vector2i(screen.round()), Vector2i(1, 1))
+	pm.popup(rect)
+
+
+## A 16x16 check box: a light frame, with a tick-like filled square when checked.
+static func _check_icon(on: bool, col: Color) -> ImageTexture:
+	var img := Image.create_empty(16, 16, false, Image.FORMAT_RGBA8)
+	img.fill(Color(0, 0, 0, 0))
+	for i in range(1, 15):
+		for w in [1, 14]:
+			img.set_pixel(i, w, col)
+			img.set_pixel(w, i, col)
+	for y in range(2, 14):
+		for x in range(2, 14):
+			img.set_pixel(x, y, Color(0.06, 0.055, 0.11, 0.9))
+	if on:
+		for y in range(4, 12):
+			for x in range(4, 12):
+				img.set_pixel(x, y, col)
+	return ImageTexture.create_from_image(img)
 
 
 static func label(text: String, size: int = 15, color: Color = TEXT, align: int = HORIZONTAL_ALIGNMENT_LEFT) -> Label:

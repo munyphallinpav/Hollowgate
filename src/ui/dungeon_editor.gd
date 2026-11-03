@@ -1089,15 +1089,88 @@ func _validate(show_ok: bool) -> bool:
 		for m in design["rooms"][c].get("monsters", []):
 			mons += int(m.get("count", 1))
 		traps += design["rooms"][c].get("traps", []).size()
-	status_lbl.text = "[color=#7be05a]%s[/color]  %d rooms • %d monsters • %d traps • Boss: %s • Rank %d %s" % [
-		"Valid!" if show_ok else "OK", design["rooms"].size(), mons, traps, boss_name, int(design.get("rank", 1)), GameData.DUNGEON_BIOMES[design.get("biome", "cave")]["name"]]
+	status_lbl.text = "[color=#7be05a]%s[/color]  %d rooms • %d monsters • %d traps • Boss: %s • Rank %d %s     [color=#9c97b8]Guild Dungeon Hall rating:[/color] %s" % [
+		"Valid!" if show_ok else "OK", design["rooms"].size(), mons, traps, boss_name, int(design.get("rank", 1)), GameData.DUNGEON_BIOMES[design.get("biome", "cave")]["name"],
+		GuildWindow.rating_text({"rank": int(design.get("rank", 1)), "design": design})]
 	return true
 
 
 func _test_run() -> void:
 	if not _validate(true):
 		return
-	Game.main.start_test_run(design.duplicate(true))
+	_test_run_dialog()
+
+
+## Who runs the test: you (with your party), or adventurers while you watch from a free camera.
+var test_start_btn: Button  # the runner picker's start button (also used by the automated tests)
+
+
+func _test_run_dialog() -> void:
+	var m := Dialogs._modal(self, "Test run — who runs it?", 560)
+	var body: VBoxContainer = m["body"]
+	body.add_child(UI.rich("Test runs are free and change nothing: everyone comes back exactly as they went in. Up to [b]%d[/b] runners. Leave yourself out to [b]watch[/b] the run from the spectator camera (follow any runner or fly freely)." % Social.PARTY_MAX, 14))
+	var picks := {}  # id -> CheckBox
+	var you := CheckBox.new()
+	you.text = "%s (you) — play it yourself" % Game.player["name"]
+	you.button_pressed = true
+	body.add_child(you)
+	var warn := UI.label("", 13, UI.BAD)
+	var start_btn := UI.button("Start test run", Callable(), 160)
+	test_start_btn = start_btn
+	var refresh := func():
+		var count := (1 if you.button_pressed else 0)
+		for id in picks:
+			if picks[id].button_pressed:
+				count += 1
+		for id in picks:
+			picks[id].disabled = not picks[id].button_pressed and count >= Social.PARTY_MAX
+		warn.text = "Pick at least one runner." if count == 0 else ("Party is full (%d runners)." % Social.PARTY_MAX if count >= Social.PARTY_MAX else "")
+		warn.add_theme_color_override("font_color", UI.BAD if count == 0 else UI.DIM)
+		start_btn.disabled = count == 0
+		start_btn.text = ("Start test run" if you.button_pressed else "Watch test run")
+	you.toggled.connect(func(_on): refresh.call())
+	var rank := int(design.get("rank", 1))
+	var add_row := func(n: Dictionary, on: bool, box: VBoxContainer):
+		var cb := CheckBox.new()
+		cb.text = "%s — Lv %d %s  (%s)" % [n["name"], int(n["level"]), GameData.CLASSES[n["class"]]["name"], Social.bond_name(n)]
+		cb.add_theme_color_override("font_color", GameData.CLASSES[n["class"]]["color"].lightened(0.35))
+		cb.button_pressed = on
+		cb.toggled.connect(func(_on): refresh.call())
+		picks[int(n["id"])] = cb
+		box.add_child(cb)
+	var mem := Social.party_members()
+	if not mem.is_empty():
+		body.add_child(UI.label("Your party", 15, Color("ffe9a8")))
+		for n in mem:
+			if n["state"] != "dead":
+				add_row.call(n, picks.size() < Social.PARTY_MAX - 1, body)
+	var vols := []
+	for n in NpcWorld.npcs():
+		if n["state"] == "town" and not Social.in_party(n):
+			vols.append(n)
+	vols.sort_custom(func(a, b): return absi(int(a["level"]) - rank) < absi(int(b["level"]) - rank))
+	if not vols.is_empty():
+		body.add_child(UI.label("Adventurers in town happy to help (closest to rank %d first)" % rank, 15, Color("ffe9a8")))
+		var vb := UI.vbox(2)
+		for n in vols.slice(0, 14):
+			add_row.call(n, false, vb)
+		body.add_child(UI.scroll(vb, Vector2(520, 180)))
+	body.add_child(warn)
+	var h := UI.hbox(10)
+	h.alignment = BoxContainer.ALIGNMENT_END
+	body.add_child(h)
+	h.add_child(UI.button("Cancel", func(): m["root"].queue_free(), 100))
+	start_btn.pressed.connect(func():
+		var ids := []
+		for id in picks:
+			if picks[id].button_pressed:
+				ids.append(id)
+		if ids.is_empty() and not you.button_pressed:
+			return
+		m["root"].queue_free()
+		Game.main.start_test_run(design.duplicate(true), {"hero": you.button_pressed, "npcs": ids}))
+	h.add_child(start_btn)
+	refresh.call()
 
 
 func _make_crystal() -> void:

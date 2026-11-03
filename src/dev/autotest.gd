@@ -35,6 +35,7 @@ func shot(name: String) -> void:
 	await _frames(3)
 	var img := get_viewport().get_texture().get_image()
 	step += 1
+	DirAccess.make_dir_recursive_absolute(shots_dir)
 	img.save_png("%s/%02d_%s.png" % [shots_dir, step, name])
 	print("[autotest] shot ", name)
 
@@ -192,12 +193,174 @@ func _check_scripts(dir: String, out: Array) -> void:
 		_check_scripts(dir.path_join(sub), out)
 
 
+## Loads a dev test script; if it fails to compile, report it and quit instead of hanging.
+func _dev_script(path: String) -> Node:
+	var scr = load(path)
+	if scr == null or not (scr is GDScript) or not scr.can_instantiate():
+		push_error("Could not load " + path)
+		get_tree().quit(1)
+		return null
+	return scr.new()
+
+
 func _run() -> void:
 	var M = Game.main
+	if "--balance" in OS.get_cmdline_user_args():
+		var bp = _dev_script("res://src/dev/balance_probe.gd")
+		if bp == null:
+			return
+		add_child(bp)
+		await bp.run_all()
+		return
+	if "--debugtest" in OS.get_cmdline_user_args():
+		var dt = _dev_script("res://src/dev/debug_test.gd")
+		if dt == null:
+			return
+		add_child(dt)
+		await dt.run_all()
+		return
+	if "--tagtest" in OS.get_cmdline_user_args():
+		var tt = _dev_script("res://src/dev/tag_test.gd")
+		if tt == null:
+			return
+		add_child(tt)
+		await tt.run_all()
+		return
+	if "--simstat" in OS.get_cmdline_user_args():
+		var ss = _dev_script("res://src/dev/sim_stats.gd")
+		if ss == null:
+			return
+		add_child(ss)
+		await ss.run_all()
+		return
+	if "--selltest" in OS.get_cmdline_user_args():
+		var st = _dev_script("res://src/dev/sell_test.gd")
+		if st == null:
+			return
+		add_child(st)
+		await st.run_all()
+		return
+	if "--aligntest" in OS.get_cmdline_user_args():
+		var al = _dev_script("res://src/dev/align_test.gd")
+		if al == null:
+			return
+		add_child(al)
+		await al.run_all()
+		return
+	if "--restest" in OS.get_cmdline_user_args():
+		var rt = _dev_script("res://src/dev/res_test.gd")
+		if rt == null:
+			return
+		add_child(rt)
+		await rt.run_all()
+		return
+	if "--socialtest" in OS.get_cmdline_user_args():
+		var so = _dev_script("res://src/dev/social_test.gd")
+		if so == null:
+			return
+		add_child(so)
+		await so.run_all()
+		return
+	if "--npctest" in OS.get_cmdline_user_args():
+		var nt = _dev_script("res://src/dev/npc_test.gd")
+		if nt == null:
+			return
+		add_child(nt)
+		await nt.run_all()
+		return
 	if "--qa" in OS.get_cmdline_user_args():
-		var qa = load("res://src/dev/qa.gd").new()
+		var qa = _dev_script("res://src/dev/qa.gd")
+		if qa == null:
+			return
 		add_child(qa)
 		await qa.run_all()
+		return
+	if "--keytest" in OS.get_cmdline_user_args():
+		var press := func(code: int) -> void:
+			var ev := InputEventKey.new()
+			ev.physical_keycode = code
+			ev.keycode = code
+			ev.pressed = true
+			Input.parse_input_event(ev)
+			await _frames(2)
+			var up := ev.duplicate()
+			up.pressed = false
+			Input.parse_input_event(up)
+		for cls in ["warrior", "ranger", "assassin", "mage", "priest"]:
+			M.start_new_game("Key", cls, 3)
+			await _wait(0.8)
+			var p = Game.player_node
+			# a normal level-3 character spending every point on the first skills it can learn
+			Game.add_xp(GameData.xp_to_next(1) + GameData.xp_to_next(2))
+			var order := GameData.skills_for(cls) + GameData.skills_for("common")
+			var guard := 0
+			while int(Game.player["skill_points"]) > 0 and guard < 200:
+				guard += 1
+				var pick := ""
+				for id in order:  # first: one point into every active not learned yet
+					if GameData.SKILLS[id]["type"] == "active" and Game.skill_level(id) == 0 and Game.can_learn(id):
+						pick = id
+						break
+				if pick == "":
+					for id in order:
+						if Game.can_learn(id):
+							pick = id
+							break
+				if pick == "":
+					break
+				Game.learn_skill(pick, 1)
+			log_("%s Lv%d hot skills: %s  items: %s" % [cls, int(Game.player["level"]), str(Game.player["hot_skills"]), str(Game.player["hot_items"])])
+			p.global_position = Vector2(256 * 16 + 8, 300 * 16)
+			Game.level_node._update_chunks(true)
+			await _wait(0.4)
+			var results := []
+			for i in 4:
+				var sid: String = Game.player["hot_skills"][i]
+				p.skill_cds.clear()
+				p.gcd = 0.0
+				p.mp = p.max_mp
+				var m = Game.level_node.spawn_monster("slime", p.global_position + Vector2(40, 0), 1)
+				await _wait(0.3)
+				await press.call(KEY_1 + i)
+				await _wait(0.5)
+				results.append("%d:%s=%s" % [i + 1, sid, str(sid != "" and p.skill_cds.has(sid))])
+				if is_instance_valid(m):
+					m.queue_free()
+				await _wait(0.3)
+			log_("   single presses  " + "  ".join(PackedStringArray(results)))
+			# rapid 3 -> 4 (second press lands inside the global cooldown and must be buffered)
+			p.skill_cds.clear()
+			p.gcd = 0.0
+			p.mp = p.max_mp
+			var m2 = Game.level_node.spawn_monster("slime", p.global_position + Vector2(40, 0), 1)
+			await _wait(0.2)
+			await press.call(KEY_3)
+			await _frames(2)
+			await press.call(KEY_4)
+			await _wait(0.6)
+			var s3: String = Game.player["hot_skills"][2]
+			var s4: String = Game.player["hot_skills"][3]
+			log_("   rapid 3 then 4  -> %s=%s %s=%s" % [s3, str(p.skill_cds.has(s3)), s4, str(p.skill_cds.has(s4))])
+			if is_instance_valid(m2):
+				m2.queue_free()
+			# consumable slot 4 (V)
+			p.hp = p.max_hp * 0.5
+			Game._item_cd = 0.0
+			var apples := Game.count_item("food_apple")
+			await press.call(KEY_V)
+			await _wait(0.3)
+			log_("   V uses apple: %s" % str(Game.count_item("food_apple") == apples - 1))
+			await _wait(1.0)
+		# empty-slot hint
+		await _wait(3.2)
+		Game.player["hot_skills"][3] = ""
+		var got := []
+		var cb := func(t, _c): got.append(t)
+		Game.notify.connect(cb)
+		await press.call(KEY_4)
+		await _wait(0.3)
+		log_("   empty slot 4 hint: %s" % str(got))
+		get_tree().quit()
 		return
 	if "--check" in OS.get_cmdline_user_args():
 		var bad := []

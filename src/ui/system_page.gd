@@ -20,6 +20,10 @@ func _ready() -> void:
 			_refresh(), 160)
 	sb.disabled = Game.test_run
 	h.add_child(sb)
+	if Game.test_run:
+		h.add_child(UI.button("End Test Run", func():
+			Game.main.close_all()
+			Game.main.end_test_run("exit"), 160))
 	h.add_child(UI.button("Return to Title", func():
 		Dialogs.confirm(Game.main.menu_layer, "Return to title", "Your progress will be saved. Return to the title screen?", func(): Game.main.go_title(true)), 180))
 	h.add_child(UI.button("Quit Game", func():
@@ -33,13 +37,13 @@ func _ready() -> void:
 	add_child(slots_box)
 	add_child(UI.sep())
 	add_child(UI.label("How to play", 16, Color("ffe9a8")))
-	var keys := "Move [b]%s%s%s%s[/b] • Attack [b]%s[/b] (hold) • Dash [b]%s[/b] (immune while dashing) • Skills [b]%s %s %s %s[/b] • Consumables [b]%s %s %s %s[/b]\nInteract [b]%s[/b] • Teleport to town [b]%s[/b] • Inventory [b]%s[/b] • Character [b]%s[/b] • Skills [b]%s[/b] • Quests [b]%s[/b] • Map [b]%s[/b] • Dungeon editor [b]%s[/b]" % [
+	var keys := "Move [b]%s%s%s%s[/b] • Attack [b]%s[/b] (hold) • Dash [b]%s[/b] (immune while dashing) • Skills [b]%s %s %s %s[/b] • Consumables [b]%s %s %s %s[/b]\nInteract [b]%s[/b] • Teleport to town [b]%s[/b] • Inventory [b]%s[/b] • Character [b]%s[/b] • Skills [b]%s[/b] • Quests [b]%s[/b] • Map [b]%s[/b] • Dungeon editor [b]%s[/b] • Fullscreen [b]%s[/b] / [b]Alt+Enter[/b]" % [
 		Settings.action_text("move_up"), Settings.action_text("move_left"), Settings.action_text("move_down"), Settings.action_text("move_right"),
 		Settings.action_text("attack"), Settings.action_text("dash"), Settings.action_text("skill_1"), Settings.action_text("skill_2"),
 		Settings.action_text("skill_3"), Settings.action_text("skill_4"), Settings.action_text("item_1"), Settings.action_text("item_2"),
 		Settings.action_text("item_3"), Settings.action_text("item_4"), Settings.action_text("interact"), Settings.action_text("teleport_town"),
 		Settings.action_text("open_inventory"), Settings.action_text("open_character"), Settings.action_text("open_skills"),
-		Settings.action_text("open_quests"), Settings.action_text("open_map"), Settings.action_text("open_editor")]
+		Settings.action_text("open_quests"), Settings.action_text("open_map"), Settings.action_text("open_editor"), Settings.action_text("toggle_fullscreen")]
 	add_child(UI.rich(keys, 14))
 	add_child(UI.rich("[color=#9c97b8]Monster level rises the farther you travel from Hollowgate. Hidden dungeons (marked on the map) hold mini bosses, a boss and its unique treasure — they vanish after a while or once cleared. Keep your belly full: below 20 Satiety you regenerate slowly. Harvest trees, rocks and ores for crafting at the Blacksmith. Mouse wheel zooms the camera.[/color]", 13))
 	_refresh()

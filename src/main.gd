@@ -13,6 +13,8 @@ var window: GameWindow
 var pending_spawn := Vector2.INF
 var test_snapshot: Dictionary = {}
 var test_return_pos := Vector2.INF
+var test_npc_snap: Array = []  # copies of the adventurers taking part in a test run (restored after)
+var last_test_summary := ""
 var _busy := false
 
 
@@ -102,7 +104,7 @@ func _free_level() -> void:
 	level = null
 	Game.level_node = null
 	Game.player_node = null
-	Engine.time_scale = 1.0
+	Engine.time_scale = DebugMode.game_speed
 
 
 func _load_level(lv: Level) -> void:
@@ -124,10 +126,12 @@ func _transition(cb: Callable) -> void:
 	tw.tween_property(fade, "color:a", 0.0, 0.35)
 
 
-func enter_dungeon(d: Dictionary, test: bool) -> void:
+func enter_dungeon(d: Dictionary, test: bool, opts: Dictionary = {}) -> void:
+	if Duel.active:
+		Duel.cancel("you left")
 	_transition(func():
 		var dl := DungeonLevel.new()
-		dl.setup(d, test)
+		dl.setup(d, test, opts)
 		_load_level(dl))
 
 
@@ -135,6 +139,8 @@ func leave_dungeon(reason: String, cleared: bool) -> void:
 	if Game.test_run:
 		end_test_run(reason)
 		return
+	if not Game.guild_run.is_empty():
+		NpcWorld.finish_hero_run(cleared)
 	_transition(func():
 		match reason:
 			"town":
@@ -155,26 +161,62 @@ func leave_dungeon(reason: String, cleared: bool) -> void:
 		_load_level(Overworld.new()))
 
 
-func start_test_run(design: Dictionary) -> void:
+## opts: {"hero": true if you play (false = watch with the spectator camera),
+##        "npcs": ids of the adventurers that run it (your party members and/or volunteers, max 3 in all)}
+func start_test_run(design: Dictionary, opts: Dictionary = {}) -> void:
 	close_all()
+	if Duel.active:
+		Duel.cancel("test run")
+	if opts.is_empty():
+		opts = {"hero": true, "npcs": Social.party_ids().duplicate()}
 	test_snapshot = Game.snapshot()
 	if level and level.player:
 		test_return_pos = level.player.global_position
 	Game.save_game(true)
+	# everything a test run could change on the adventurers is put back afterwards
+	test_npc_snap = []
+	var ids: Array = opts.get("npcs", []).duplicate()
+	for id in Social.party_ids():
+		if not id in ids:
+			ids.append(id)
+	for id in ids:
+		var n := NpcWorld.find(int(id))
+		if not n.is_empty():
+			test_npc_snap.append(n.duplicate(true))
 	Game.test_run = true
-	enter_dungeon({"id": -1, "rank": int(design.get("rank", 1)), "biome": design.get("biome", "cave"), "custom": true, "design": design, "seed": 1}, true)
+	last_test_summary = ""
+	enter_dungeon({"id": -1, "rank": int(design.get("rank", 1)), "biome": design.get("biome", "cave"), "custom": true, "design": design, "seed": 1}, true, opts)
 
 
-func end_test_run(reason: String = "exit") -> void:
+func end_test_run(reason: String = "exit", summary: String = "") -> void:
+	if summary == "" and level is DungeonLevel:
+		summary = level.run_summary()
+	last_test_summary = summary
 	_transition(func():
 		Game.test_run = false
 		Game.restore(test_snapshot)
 		pending_spawn = test_return_pos
 		_load_level(Overworld.new())
-		Game.toast("Test run finished (%s). Nothing was gained or lost." % ("defeated" if reason == "dead" else "left"), Color("c79bff"))
+		_restore_test_npcs()
+		var why: String = {"dead": "defeated", "defeated": "the party was defeated", "cleared": "cleared"}.get(reason, "left")
+		Game.toast("Test run finished (%s). Nothing was gained or lost." % why, Color("c79bff"))
 		var tw := create_tween()
 		tw.tween_interval(0.5)
-		tw.tween_callback(func(): open_service("architect")))
+		tw.tween_callback(func():
+			open_service("architect")
+			if last_test_summary != "" and window != null and is_instance_valid(window):
+				Dialogs.message(window, "Test run report", last_test_summary)))
+
+
+func _restore_test_npcs() -> void:
+	for snap in test_npc_snap:
+		var n := NpcWorld.find(int(snap["id"]))
+		if n.is_empty():
+			continue
+		n.clear()
+		n.merge(snap, true)
+		n["physical"] = false
+	test_npc_snap = []
 
 
 # ===================================================================== windows
@@ -215,6 +257,25 @@ func open_service(role: String, _npc = null) -> void:
 		_:
 			Game.refresh_shops()
 			_open(ShopWindow.new(role))
+
+
+func open_npc_profile(id: int) -> void:
+	if not Game.in_game:
+		return
+	var n := NpcWorld.find(id)
+	if n.is_empty():
+		return
+	var w := NpcProfileWindow.new(n)
+	if window != null and is_instance_valid(window):
+		menu_layer.add_child(w)  # stacked on top of the guild window
+	else:
+		_open(w)
+
+
+func open_duel(n: Dictionary, a: Adventurer, challenge: Dictionary = {}) -> void:
+	if not Game.in_game or a == null or not is_instance_valid(a):
+		return
+	_open(DuelWindow.new(n, a, challenge))
 
 
 func is_service_open(role: String) -> bool:

@@ -23,8 +23,9 @@ static func create(k: String, p: Player, pw: float, dur: float) -> Ally:
 
 
 func _ready() -> void:
-	team = "player"
-	add_to_group("team_player")
+	team = owner_player.team if is_instance_valid(owner_player) else "player"
+	foe_side = owner_player.foe_team() if is_instance_valid(owner_player) else ""
+	add_to_group("team_" + team)
 	add_to_group("allies")
 	collision_layer = 0
 	collision_mask = 1
@@ -53,7 +54,7 @@ func _ready() -> void:
 
 
 func get_stats() -> Dictionary:
-	return Game.stats
+	return owner_player.get_stats() if is_instance_valid(owner_player) else {}
 
 
 func _physics_process(delta: float) -> void:
@@ -84,7 +85,7 @@ func _physics_process(delta: float) -> void:
 func _nearest_enemy(r: float) -> Actor:
 	var best: Actor = null
 	var bd := r
-	for e in level_node().get_team_actors("enemy"):
+	for e in level_node().get_team_actors(foe_team()):
 		if e.dead:
 			continue
 		if e is Monster and e.data.get("passive", false):
@@ -130,13 +131,13 @@ func _angel(delta: float) -> void:
 	var lv = level_node()
 	if heal_cd <= 0.0:
 		heal_cd = 2.0
-		owner_player.heal(owner_player.max_hp * 0.03 * (1.0 + float(Game.stats.get("heal_pct", 0.0)) / 100.0))
+		owner_player.heal(owner_player.max_hp * 0.03 * (1.0 + float(owner_player.st.get("heal_pct", 0.0)) / 100.0))
 		VFX.beam(lv, body_center(), owner_player.body_center(), 2.0, Color("fff6c8"), 0.3)
 		VFX.particles(lv, owner_player.body_center(), Color("fff6c8"), 8, 30.0, 0.6, Vector2(0, -30), "spark", 0.5)
 	if target and atk_cd <= 0.0:
 		atk_cd = 1.0
 		var dir := (target.global_position - global_position).normalized()
-		Projectile.spawn(lv, global_position, dir, {"attacker": self, "team": "player", "speed": 300.0, "range": 220.0,
+		Projectile.spawn(lv, global_position, dir, {"attacker": self, "team": team, "foe": foe_team(), "speed": 300.0, "range": 220.0,
 			"power": power, "dmg": "magic", "el": "light", "tex": "holy_orb", "height": hover + 14.0, "trail": true, "opts": {"undead_bonus": 50.0}})
 		play_anim("attack")
 
@@ -153,7 +154,7 @@ func _clone(delta: float) -> void:
 			atk_cd = 0.55
 			var lv = level_node()
 			VFX.slash(lv, global_position + Vector2(0, -10), d.normalized(), 26.0, 120.0, Color("c8b8ff"), 0.18, 3.0)
-			for e in lv.actors_in_arc(global_position, d.normalized(), 28.0, 120.0, "enemy"):
+			for e in lv.actors_in_arc(global_position, d.normalized(), 28.0, 120.0, foe_team()):
 				Combat.hit(self, e, power, "phys", "dark", {"knock": 50.0})
 			anim = "attack_side"
 		set_facing_x(d.x)

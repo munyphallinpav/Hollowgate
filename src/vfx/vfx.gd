@@ -42,6 +42,14 @@ static func ground_ring(level: Node, pos: Vector2, radius: float, color: Color, 
 	return f
 
 
+## A ground ring that stays until freed (e.g. the duel arena).
+static func static_ring(level: Node, pos: Vector2, radius: float, color: Color, width: float = 2.0) -> FxNode:
+	var f := _fx(level, "static_ring", pos, 1e9, color, "under")
+	f.radius = radius
+	f.width = width
+	return f
+
+
 static func disc(level: Node, pos: Vector2, radius: float, color: Color, dur: float = 0.25) -> FxNode:
 	var f := _fx(level, "disc", pos, dur, color)
 	f.radius = radius
@@ -162,7 +170,7 @@ static func explosion(level: Node, pos: Vector2, radius: float, color: Color, so
 	particles(level, pos + Vector2(0, -4), Color(1, 1, 1), 8, radius * 4.0, 0.3, Vector2.ZERO, "spark", 0.8)
 	particles(level, pos, Color(0.4, 0.4, 0.45, 0.6), 6, radius, 0.9, Vector2(0, -20), "smoke", 1.0)
 	if level:
-		level.shake(minf(6.0, radius * 0.08), 0.25)
+		level.shake(minf(6.0, radius * 0.08), 0.25, pos)
 	if sound != "":
 		Sfx.play(sound)
 
@@ -180,7 +188,7 @@ static func element_burst(level: Node, pos: Vector2, el: String, radius: float) 
 			ground_ring(level, pos, radius, c, 0.4, 3.0)
 			particles(level, pos, Color("9a7050"), 14, radius * 2.5, 0.6, Vector2(0, 180), "px", 0.6, 70.0)
 			if level:
-				level.shake(3.0, 0.2)
+				level.shake(3.0, 0.2, pos)
 			Sfx.play("earth")
 		"wind":
 			ring(level, pos + Vector2(0, -6), radius, c, 0.35, 2.0, 4.0, false)

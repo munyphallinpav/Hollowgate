@@ -21,11 +21,15 @@ var t := 0.0
 var _tick_t := 0.0
 var fx: FxNode
 var ast: Dictionary = {}
+var foe := "enemy"   # who it damages (the caster's foe team when it was placed)
+var side := "player" # who it heals
 
 
 func _ready() -> void:
 	if is_instance_valid(caster):
 		ast = caster.get_stats().duplicate()
+		foe = caster.foe_team()
+		side = caster.team
 
 
 func _physics_process(delta: float) -> void:
@@ -42,7 +46,7 @@ func _physics_process(delta: float) -> void:
 			fx.global_position = global_position
 	# pull enemies toward the centre
 	if pull > 0.0:
-		for a in lv.actors_in_radius(global_position, radius * 1.3, "enemy"):
+		for a in lv.actors_in_radius(global_position, radius * 1.3, foe):
 			if a.is_boss():
 				continue
 			var d: Vector2 = global_position - a.global_position
@@ -55,18 +59,18 @@ func _physics_process(delta: float) -> void:
 	if t >= dur:
 		if finale > 0.0:
 			VFX.explosion(lv, global_position, radius, GameData.element_color(element), "dark" if element == "dark" else "explode")
-			for a in lv.actors_in_radius(global_position, radius, "enemy"):
+			for a in lv.actors_in_radius(global_position, radius, foe):
 				Combat.hit(caster if is_instance_valid(caster) else null, a, finale, dmg_type, element, {"ast": ast, "knock": 160.0, "knock_dir": (a.global_position - global_position).normalized()})
 		queue_free()
 
 
 func _do_tick(lv) -> void:
 	if power > 0.0:
-		for a in lv.actors_in_radius(global_position, radius, "enemy"):
+		for a in lv.actors_in_radius(global_position, radius, foe):
 			Combat.hit(caster if is_instance_valid(caster) else null, a, power, dmg_type, element, {"ast": ast, "status": status, "no_flash": true, "skill": true})
 	if heal_pct > 0.0:
 		var hp_mult := 1.0 + float(ast.get("heal_pct", 0.0)) / 100.0
-		for a in lv.actors_in_radius(global_position, radius, "player"):
+		for a in lv.actors_in_radius(global_position, radius, side):
 			a.heal(a.max_hp * heal_pct / 100.0 * hp_mult)
 			if cleanse:
 				a.clear_debuffs()

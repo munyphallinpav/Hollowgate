@@ -64,7 +64,7 @@ func _build_world(lv: Overworld) -> void:
 	map_rect.texture = ImageTexture.create_from_image(img)
 	scale_f = map_px / float(WorldGen.SIZE)
 	side.add_child(UI.label("World Map", 18, Color("ffe9a8")))
-	side.add_child(UI.rich("[color=#9c97b8]Explored lands are revealed as you travel. Hidden dungeons are always marked — their colour shows the rank. Hover a marker for details.[/color]", 13))
+	side.add_child(UI.rich("[color=#9c97b8]Explored lands are revealed as you travel. Hidden dungeons are always marked — their colour shows the rank. Small dots are adventurers out hunting (class colour). Hover a marker for details.[/color]", 13))
 	side.add_child(UI.rich("Rank colours:  [color=#7be05a]1-19[/color]  [color=#3fa9f5]20-39[/color]  [color=#b06cf0]40-59[/color]  [color=#ff9a2e]60-79[/color]  [color=#ff4f7b]80-100[/color]", 13))
 	side.add_child(UI.sep())
 	var pt := lv.tile_of(lv.player.global_position)
@@ -123,6 +123,14 @@ func _draw_overlay() -> void:
 			overlay.draw_polyline(PackedVector2Array([pts[0], pts[1], pts[2], pts[3], pts[0]]), Color.BLACK, 1.0)
 			if d.get("custom", false):
 				overlay.draw_arc(p, 8.0, 0, TAU, 16, Color("c79bff"), 1.5)
+		for n in NpcWorld.npcs():
+			if not n["state"] in ["travel", "hunt", "return", "follow"]:
+				continue
+			var a = NpcWorld.actor_of(n)
+			var np: Vector2 = a.global_position if a else Vector2(n["pos"][0], n["pos"][1])
+			var mpp: Vector2 = np / 16.0 * scale_f
+			overlay.draw_circle(mpp, 3.0, Color(0, 0, 0, 0.8))
+			overlay.draw_circle(mpp, 2.2, GameData.CLASSES[n["class"]]["color"].lightened(0.3))
 		var lf: Array = Game.player.get("last_field", [])
 		if lf.size() == 2:
 			var wp := Vector2(lf[0], lf[1]) / 16.0 * scale_f
@@ -144,6 +152,16 @@ func _draw_overlay() -> void:
 func _overlay_input(e: InputEvent) -> void:
 	if e is InputEventMouseMotion and Game.level_node is Overworld:
 		var mp: Vector2 = e.position
+		# adventurers out in the wild
+		for n in NpcWorld.npcs():
+			if not n["state"] in ["travel", "hunt", "return", "follow"]:
+				continue
+			var a = NpcWorld.actor_of(n)
+			var np: Vector2 = a.global_position if a else Vector2(n["pos"][0], n["pos"][1])
+			if (np / 16.0 * scale_f).distance_to(mp) < 5.0:
+				Game.main.tooltip.show_text("[b][color=#%s]%s[/color][/b]  Lv %d %s\n%s" % [GameData.CLASSES[n["class"]]["color"].lightened(0.3).to_html(false),
+					n["name"], int(n["level"]), GameData.CLASSES[n["class"]]["name"], NpcWorld.activity(n)], 260)
+				return
 		var best: Dictionary = {}
 		for d in Game.world["dungeons"]:
 			var p := Vector2(d["tile"][0], d["tile"][1]) * scale_f
