@@ -37,6 +37,10 @@ var mm_panel: PanelContainer
 var _mm_t := 0.0
 var _q_dirty := true
 var _vig := 0.0
+var status_panel: PanelContainer
+var party_box: VBoxContainer
+var _party_rows: Array = []  # [actor-or-record, hp bar, label]
+var banner: RichTextLabel
 const MM_TILES := 72
 
 
@@ -56,6 +60,7 @@ func _ready() -> void:
 	_build_toasts()
 	_build_boss()
 	_build_prompts()
+	_build_party()
 	Game.notify.connect(toast)
 	Game.saved.connect(_on_saved)
 	Game.quests_changed.connect(func(): _q_dirty = true)
@@ -86,6 +91,7 @@ func _build_status() -> void:
 	panel.position = Vector2(10, 10)
 	panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	root.add_child(panel)
+	status_panel = panel
 	var v := UI.vbox(3)
 	panel.add_child(v)
 	name_lbl = UI.outlined(UI.label("", 16, Color("ffe9a8")))
@@ -233,6 +239,101 @@ func _build_prompts() -> void:
 	root.add_child(death_panel)
 
 
+## Party / test-run frames under the status panel, and a banner for duels and spectating.
+func _build_party() -> void:
+	party_box = UI.vbox(3)
+	party_box.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	root.add_child(party_box)
+	banner = UI.rich("", 15)
+	banner.custom_minimum_size = Vector2(760, 0)
+	banner.fit_content = true
+	banner.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	banner.add_theme_constant_override("outline_size", 4)
+	banner.add_theme_color_override("font_outline_color", Color.BLACK)
+	root.add_child(banner)
+
+
+func _party_list() -> Array:
+	var out := []
+	var lvn = Game.level_node
+	for n in Social.party_members():
+		if Game.test_run and lvn is DungeonLevel and not int(n["id"]) in lvn.runner_ids:
+			continue  # left out of this test run
+		out.append(n)
+	if lvn is DungeonLevel:
+		for a in lvn.runners:
+			if is_instance_valid(a) and not Social.in_party(a.npc):
+				out.append(a.npc)
+	return out
+
+
+func _update_party() -> void:
+	var list := _party_list()
+	var key := ""
+	for n in list:
+		key += str(n["id"]) + ","
+	if party_box.get_meta("k", "") != key:
+		party_box.set_meta("k", key)
+		for c in party_box.get_children():
+			c.queue_free()
+		_party_rows = []
+		if not list.is_empty():
+			var lvn = Game.level_node
+			var title := "Party (%d/%d)" % [1 + Social.party_members().size(), Social.PARTY_MAX]
+			if Game.test_run and lvn is DungeonLevel and not lvn.hero_plays:
+				title = "Test runners"
+			party_box.add_child(UI.outlined(UI.label(title, 12, Color("7be0ff"))))
+		for n in list:
+			var row := UI.vbox(1)
+			var l := UI.outlined(UI.label("", 12, GameData.CLASSES[n["class"]]["color"].lightened(0.35)))
+			row.add_child(l)
+			var b := UI.bar(Color("d8343e"), 160, 7)
+			row.add_child(b)
+			party_box.add_child(row)
+			_party_rows.append([n, b, l])
+	for r in _party_rows:
+		var n: Dictionary = r[0]
+		var a = NpcWorld.actor_of(n)
+		var frac := float(n.get("hp_frac", 1.0))
+		var where := ""
+		if a:
+			frac = 0.0 if a.dead else a.hp / maxf(1.0, a.max_hp)
+		elif n["state"] == "dead":
+			frac = 0.0
+		else:
+			where = "  (away)"
+		r[1].max_value = 1.0
+		r[1].value = frac
+		r[2].text = "%s  Lv%d%s%s" % [n["name"], int(n["level"]), "  (down)" if frac <= 0.0 else "", where]
+	party_box.position = status_panel.position + Vector2(4, status_panel.size.y + 6)
+
+
+func _update_banner() -> void:
+	var lvn = Game.level_node
+	var txt := ""
+	if Duel.active and Duel.b != null and is_instance_valid(Duel.b):
+		var left := Duel.TIME_LIMIT - Duel.t if Duel.phase == "fight" else Duel.TIME_LIMIT
+		txt = "[center][color=#fee761][b]DUEL[/b][/color] vs %s  •  %s  •  pot: %s%s[/center]" % [Duel.b.display_name,
+			("starts in %d" % int(ceil(Duel.COUNTDOWN - Duel.t))) if Duel.phase == "countdown" else UI.fmt_time(left) + " left", Duel.pot_text(),
+			"  •  [color=#ffb347]back into the ring![/color]" if Duel.out_t > 0.0 else ""]
+	elif lvn and lvn.spectate:
+		var who := "free camera"
+		if not lvn.spec_free and lvn.spec_target and is_instance_valid(lvn.spec_target):
+			who = "following " + lvn.spec_target.display_name
+		var keys := "[color=#9c97b8]%s/%s/%s follow a runner • %s free camera • %s%s%s%s move it • wheel zoom • %s menu / end[/color]" % [
+			Settings.action_text("skill_1"), Settings.action_text("skill_2"), Settings.action_text("skill_3"), Settings.action_text("dash"),
+			Settings.action_text("move_up"), Settings.action_text("move_left"), Settings.action_text("move_down"), Settings.action_text("move_right"),
+			Settings.action_text("menu")]
+		var t := ""
+		if lvn is DungeonLevel:
+			t = "  •  %s  •  %d monsters down" % [UI.fmt_time(lvn.run_time), lvn.run_kills]
+		txt = "[center][color=#c79bff][b]SPECTATING TEST RUN[/b][/color] — %s%s\n%s[/center]" % [who, t, keys]
+	banner.text = txt
+	banner.visible = txt != ""
+	var vp := root.size
+	banner.position = Vector2(round((vp.x - banner.size.x) * 0.5), (boss_panel.position.y + boss_panel.size.y + 6) if boss_panel.visible else 12.0)
+
+
 # ---------------------------------------------------------------- update
 func _layout() -> void:
 	var vp := root.size
@@ -299,6 +400,8 @@ func _process(delta: float) -> void:
 			boss_lbl.text = "%s  (Lv %d)%s" % [b.display_name, b.level, "  — ENRAGED" if b.enraged else ""]
 			boss_bar.max_value = b.max_hp
 			boss_bar.value = b.hp
+	_update_party()
+	_update_banner()
 	_mm_t -= delta
 	if _mm_t <= 0.0:
 		_mm_t = 0.35
@@ -408,7 +511,8 @@ func _update_minimap() -> void:
 	if lvn == null or lvn.player == null or not is_instance_valid(lvn.player):
 		return
 	mm_img.fill(Color(0.03, 0.03, 0.06, 1))
-	var pt := Vector2i(int(lvn.player.global_position.x / 16.0), int(lvn.player.global_position.y / 16.0))
+	var vc: Vector2 = lvn.view_center()
+	var pt := Vector2i(int(vc.x / 16.0), int(vc.y / 16.0))
 	var o := pt - Vector2i(MM_TILES / 2, MM_TILES / 2)
 	if lvn is Overworld:
 		var cs := WorldGen.CHUNK
@@ -459,6 +563,15 @@ func _draw_marks() -> void:
 				var mp: Vector2 = (m.global_position / 16.0 - Vector2(o)) * scale
 				if Rect2(Vector2.ZERO, Vector2(176, 176)).has_point(mp):
 					mm_marks.draw_circle(mp, 1.6, Color("ff5a5a") if not m.data.get("passive", false) else Color("f0e0c0"))
+		for n in NpcWorld.npcs():
+			if not n["state"] in ["town", "travel", "hunt", "return", "follow"]:
+				continue
+			var a = NpcWorld.actor_of(n)
+			var np: Vector2 = a.global_position if a else Vector2(n["pos"][0], n["pos"][1])
+			var mp3: Vector2 = (np / 16.0 - Vector2(o)) * scale
+			if Rect2(Vector2.ZERO, Vector2(176, 176)).has_point(mp3):
+				mm_marks.draw_circle(mp3, 2.6, Color(0, 0, 0, 0.8))
+				mm_marks.draw_circle(mp3, 2.0, GameData.CLASSES[n["class"]]["color"].lightened(0.3))
 		var town := (Vector2(256, 256) - Vector2(o)) * scale
 		if Rect2(Vector2.ZERO, Vector2(176, 176)).has_point(town):
 			mm_marks.draw_rect(Rect2(town - Vector2(4, 4), Vector2(8, 8)), Color("fee761"), false, 2.0)
@@ -468,9 +581,16 @@ func _draw_marks() -> void:
 				var mp2: Vector2 = (m.global_position / 16.0 - Vector2(o)) * scale
 				if Rect2(Vector2.ZERO, Vector2(176, 176)).has_point(mp2):
 					mm_marks.draw_circle(mp2, 1.8 if m.tier == "normal" else 3.0, Color("ff5a5a") if m.tier != "boss" else Color("ff2a2a"))
+	for a in lvn.focus_actors():
+		if a == lvn.player or not (a.leader == lvn.player or a.has_meta("runner") or Social.in_party(a.npc)):
+			continue
+		var fp: Vector2 = (a.global_position / 16.0 - Vector2(o)) * scale
+		if Rect2(Vector2.ZERO, Vector2(176, 176)).has_point(fp):
+			mm_marks.draw_circle(fp, 3.0, Color(0, 0, 0, 0.8))
+			mm_marks.draw_circle(fp, 2.3, Color("7be0ff"))
 	var pc := Vector2(88, 88)
 	var p = lvn.player
-	if p and is_instance_valid(p):
+	if p and is_instance_valid(p) and not lvn.spectate:
 		var a: float = p.aim.angle()
 		var tri := PackedVector2Array([pc + Vector2.from_angle(a) * 6.0, pc + Vector2.from_angle(a + 2.5) * 4.0, pc + Vector2.from_angle(a - 2.5) * 4.0])
 		mm_marks.draw_colored_polygon(tri, Color("7be0ff"))

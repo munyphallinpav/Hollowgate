@@ -62,8 +62,9 @@ func _init(r: String) -> void:
 	rt.add_child(UI.icon(Art.icon("gold"), 18))
 	gold_lbl = UI.label("", 16, Color("fee761"))
 	rt.add_child(gold_lbl)
+	rt.add_child(UI.button("Sell by filter...", open_sell_filter))
 	rt.add_child(UI.button("Sell all Common gear", _sell_junk))
-	right.add_child(UI.label("Click an item to sell it. Equipped items are not shown.", 12, UI.DIM))
+	right.add_child(UI.label("Click an item to sell it. Equipped items are not shown; locked items (padlock) are kept.", 12, UI.DIM))
 	inv_grid = GridContainer.new()
 	inv_grid.columns = 10
 	inv_grid.add_theme_constant_override("h_separation", 4)
@@ -211,9 +212,23 @@ func _do_buy(it: Dictionary, price: int, n: int, i: int) -> void:
 	refresh()
 
 
+## Sell many items at once by type, rarity, item level and value.
+func open_sell_filter() -> SellFilterDialog:
+	var d := SellFilterDialog.new()
+	Game.main.menu_layer.add_child(d)
+	Sfx.play("click")
+	return d
+
+
 func _sell(index: int) -> void:
 	var it = Game.player["inv"][index]
 	if not (it is Dictionary) or it.is_empty():
+		return
+	if it.get("locked", false):
+		Dialogs.confirm(Game.main.menu_layer, "Locked item", "[color=#%s]%s[/color] is locked. Unlock it and sell it for %d gold?" % [
+			Items.color_of(it).to_html(false), Items.name_of(it), Items.sell_price(it) * int(it.get("qty", 1))], func():
+				it.erase("locked")
+				_sell(index), "Unlock & sell")
 		return
 	var q := int(it.get("qty", 1))
 	var price := Items.sell_price(it)
@@ -264,7 +279,7 @@ func _sell_junk() -> void:
 	var inv_a: Array = Game.player["inv"]
 	for i in inv_a.size():
 		var it = inv_a[i]
-		if it is Dictionary and Items.is_gear(it) and int(it.get("rarity", 0)) == 0 and int(it.get("enchant", 0)) == 0:
+		if it is Dictionary and Items.is_gear(it) and int(it.get("rarity", 0)) == 0 and int(it.get("enchant", 0)) == 0 and not it.get("locked", false):
 			total += Items.sell_price(it)
 			inv_a[i] = null
 	if total > 0:

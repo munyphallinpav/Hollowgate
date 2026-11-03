@@ -29,8 +29,14 @@ func _process(delta: float) -> void:
 		music.volume_db = linear_to_db(max(Settings.music_volume * 0.35, 0.0001))
 
 
+## Volume multiplier applied to every sound; NPC adventurers lower it while they act
+## so their fights stay in the background.
+var volume_scale := 1.0
+
+
 func play(name: String, pitch_var: float = 0.08, vol: float = 1.0) -> void:
-	if not sounds.has(name) or _cooldowns.has(name):
+	vol *= volume_scale
+	if not sounds.has(name) or _cooldowns.has(name) or vol <= 0.01:
 		return
 	_cooldowns[name] = 0.035
 	var p := players[_next]

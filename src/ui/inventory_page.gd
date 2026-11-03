@@ -264,9 +264,12 @@ func _open_popup(index: int) -> void:
 		if int(it.get("qty", 1)) > 1:
 			popup.add_item("Split stack...", 1)
 	popup.add_separator()
+	popup.add_item("Unlock" if it.get("locked", false) else "Lock (never sell / discard)", 20)
 	popup.add_item("Discard...", 2)
+	if it.get("locked", false):
+		popup.set_item_disabled(popup.get_item_index(2), true)
 	popup.reset_size()
-	popup.popup(Rect2i(Vector2i(get_viewport().get_mouse_position()), Vector2i(1, 1)))
+	UI.popup_at_mouse(popup, self)
 
 
 func _on_popup(id: int) -> void:
@@ -280,6 +283,9 @@ func _on_popup(id: int) -> void:
 		1:
 			_split(idx)
 		2:
+			if it.get("locked", false):
+				Game.toast("That item is locked. Unlock it first.", UI.BAD)
+				return
 			var q := int(it.get("qty", 1))
 			if q > 1:
 				Dialogs.quantity(Game.main.menu_layer, "Discard how many %s?" % Items.name_of(it), q, q, func(n):
@@ -289,6 +295,14 @@ func _on_popup(id: int) -> void:
 				Dialogs.confirm(Game.main.menu_layer, "Discard", "Throw away [color=#%s]%s[/color]? This cannot be undone." % [Items.color_of(it).to_html(false), Items.name_of(it)], func():
 					Game.remove_at(idx)
 					Game.toast("Discarded %s" % Items.name_of(it), UI.DIM), "Discard")
+		20:
+			if it.get("locked", false):
+				it.erase("locked")
+				Game.toast("Unlocked %s." % Items.name_of(it), UI.DIM)
+			else:
+				it["locked"] = true
+				Game.toast("Locked %s — it won't be sold, discarded or salvaged." % Items.name_of(it), Color("ffd27a"))
+			Game.inventory_changed.emit()
 		10, 11, 12, 13:
 			Game.set_hot_item(id - 10, it["id"])
 			Game.toast("%s assigned to hotkey %s" % [Items.name_of(it), Settings.action_text("item_%d" % (id - 9))], UI.GOOD)

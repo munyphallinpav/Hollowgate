@@ -4,6 +4,7 @@ extends Node2D
 
 var attacker: Actor
 var team := "player"
+var foe := ""  # the team this projectile hits
 var vel := Vector2.ZERO
 var speed := 300.0
 var max_dist := 260.0
@@ -40,6 +41,9 @@ static func spawn(level: Node, from: Vector2, dir: Vector2, p: Dictionary) -> Pr
 	pr.start_pos = from
 	pr.attacker = p.get("attacker")
 	pr.team = p.get("team", "player")
+	pr.foe = p.get("foe", "")
+	if pr.foe == "":
+		pr.foe = "enemy" if pr.team == "player" else "player"
 	pr.speed = p.get("speed", 300.0)
 	pr.vel = dir.normalized() * pr.speed
 	pr.max_dist = p.get("range", 260.0)
@@ -119,7 +123,7 @@ func _physics_process(delta: float) -> void:
 	else:
 		sprite.rotation = vel.angle()
 	# actors
-	for a in lv.get_team_actors("enemy" if team == "player" else "player"):
+	for a in lv.get_team_actors(foe):
 		if a.dead or hits.has(a.get_instance_id()):
 			continue
 		if a.global_position.distance_to(global_position) <= hit_radius + a.radius:
@@ -155,7 +159,7 @@ func _find_target(rng: float) -> Actor:
 	var lv = Game.level_node
 	var best: Actor = null
 	var bd := rng
-	for a in lv.get_team_actors("enemy" if team == "player" else "player"):
+	for a in lv.get_team_actors(foe):
 		if a.dead or hits.has(a.get_instance_id()):
 			continue
 		var d = a.global_position.distance_to(global_position)
@@ -178,7 +182,7 @@ func _impact(at: Vector2, do_explode: bool = true) -> void:
 	var lv = Game.level_node
 	if do_explode and explode > 0.0 and lv:
 		VFX.element_burst(lv, at, element if element != "none" else "fire", explode)
-		for a in lv.get_team_actors("enemy" if team == "player" else "player"):
+		for a in lv.get_team_actors(foe):
 			if a.dead:
 				continue
 			if a.global_position.distance_to(at) <= explode + a.radius:

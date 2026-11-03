@@ -60,6 +60,7 @@ func shot(name: String) -> void:
 		return
 	await _frames(3)
 	step += 1
+	DirAccess.make_dir_recursive_absolute(shots_dir)
 	get_viewport().get_texture().get_image().save_png("%s/qa_%02d_%s.png" % [shots_dir, step, name])
 
 
@@ -555,9 +556,12 @@ func t_teleport_death(M) -> void:
 	# disable Last Stand / Resurrection passives for this check
 	p.passive_ready["last_stand"] = 1e12
 	p.passive_ready["revive"] = 1e12
-	for k in ["block", "dodge", "mana_shield"]:
+	for k in ["block", "dodge", "mana_shield", "low_hp_def"]:
 		Game.stats[k] = 0.0
 	p.shield = 0.0
+	p.hp = p.max_hp
+	for k in ["low_hp_def"]:
+		Game.stats[k] = 0.0
 	p.take_damage(int(p.hp) + 10, {})
 	ok(p.dead, "player can die")
 	await _wait(3.0)
@@ -749,6 +753,9 @@ func t_editor(M) -> void:
 	var xp0 := int(Game.player["xp"])
 	var inv0: int = Game.player["inv"].filter(func(x): return x is Dictionary and not x.is_empty()).size()
 	ed._test_run()
+	await _wait(0.2)
+	ok(ed.test_start_btn != null and not ed.test_start_btn.disabled, "the test run asks who runs it (you, by default)")
+	ed.test_start_btn.pressed.emit()
 	await _wait(1.6)
 	ok(Game.level_node is DungeonLevel and Game.test_run, "test run enters the custom dungeon")
 	var tl = Game.level_node

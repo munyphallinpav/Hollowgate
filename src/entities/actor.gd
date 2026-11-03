@@ -105,8 +105,29 @@ func damage_out_mult() -> float:
 	return m
 
 
+## Hero-side actors: the hero, adventurers, guards and summons — including duellists, who are moved to
+## their own teams during a duel so that only the opponent can be hit.
 func is_player_team() -> bool:
-	return team == "player"
+	return team != "enemy"
+
+
+## Who this actor's attacks hit. Normally heroes hit monsters and monsters hit heroes; a duel sets it explicitly.
+var foe_side := ""
+
+
+func foe_team() -> String:
+	if foe_side != "":
+		return foe_side
+	return "player" if team == "enemy" else "enemy"
+
+
+## Moves the actor to another team (and its group), e.g. for a duel. foe = "" restores the default foe.
+func set_team(t: String, foe: String = "") -> void:
+	if is_in_group("team_" + team):
+		remove_from_group("team_" + team)
+	team = t
+	add_to_group("team_" + t)
+	foe_side = foe
 
 
 func is_boss() -> bool:

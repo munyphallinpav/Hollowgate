@@ -92,9 +92,9 @@ static func cast(p: Player, sid: String, lv: int, target: Vector2, echo: bool = 
 		_:
 			ok = false
 	if ok and not echo and s.get("dmg", "none") != "none" and kind not in ["summon", "buff", "enchant", "shield", "smoke", "regen", "heal"]:
-		var ech := float(Game.stats.get("echo", 0.0))
+		var ech := float(p.st.get("echo", 0.0))
 		if ech > 0.0 and randf() * 100.0 < ech:
-			var tw := level.create_tween()
+			var tw := _tw(p, level)
 			tw.tween_interval(0.35)
 			tw.tween_callback(func():
 				if is_instance_valid(p) and not p.dead:
@@ -105,6 +105,25 @@ static func cast(p: Player, sid: String, lv: int, target: Vector2, echo: bool = 
 
 
 # ------------------------------------------------------------------ helpers
+## Camera shake / hit-stop only for the hero's own skills (NPC adventurers fight quietly).
+## Delayed skill effects of NPC adventurers are bound to the caster, so they end quietly when the
+## adventurer walks out of sight (and is turned back into a simulation record); the hero's stay on the level.
+static func _tw(p: Player, level) -> Tween:
+	if is_instance_valid(p) and not p.is_hero():
+		return p.create_tween()
+	return level.create_tween()
+
+
+static func fx_shake(p: Player, level, amount: float, dur: float) -> void:
+	if is_instance_valid(p) and p.is_hero():
+		level.shake(amount, dur)
+
+
+static func fx_hitstop(p: Player, level, t: float) -> void:
+	if is_instance_valid(p) and p.is_hero():
+		level.hitstop(t)
+
+
 static func power(sid: String, lv: int) -> float:
 	return GameData.skill_power(sid, lv) * _pm
 
@@ -132,7 +151,7 @@ static func dmg_type(sid: String) -> String:
 
 static func hit_area(p: Player, level, center: Vector2, r: float, sid: String, lv: int, el: String, extra: Dictionary = {}, mult: float = 1.0) -> int:
 	var n := 0
-	for a in level.actors_in_radius(center, r, "enemy"):
+	for a in level.actors_in_radius(center, r, p.foe_team()):
 		var o := opts(sid, lv, extra)
 		if not o.has("knock_dir"):
 			o["knock_dir"] = (a.global_position - center).normalized()
@@ -170,7 +189,7 @@ static func _slash(p: Player, level, sid: String, lv: int, aim: Vector2, col: Co
 	if pp.has("crit_bonus"):
 		extra["crit_bonus"] = float(pp["crit_bonus"])
 	var hit := false
-	for a in level.actors_in_arc(p.global_position, aim, r + 4.0, arc, "enemy"):
+	for a in level.actors_in_arc(p.global_position, aim, r + 4.0, arc, p.foe_team()):
 		var o := opts(sid, lv, extra)
 		o["knock_dir"] = (a.global_position - p.global_position).normalized()
 		Combat.hit(p, a, power(sid, lv), dmg_type(sid), el, o)
@@ -178,13 +197,13 @@ static func _slash(p: Player, level, sid: String, lv: int, aim: Vector2, col: Co
 		hit = true
 	level.hit_props(p.global_position + aim * r * 0.6, r * 0.7, p)
 	if pp.get("shockwave", false):
-		Projectile.spawn(level, p.global_position + aim * 10.0, aim, {"attacker": p, "team": "player", "speed": 260.0, "range": 130.0,
+		Projectile.spawn(level, p.global_position + aim * 10.0, aim, {"attacker": p, "team": p.team, "foe": p.foe_team(), "speed": 260.0, "range": 130.0,
 			"power": power(sid, lv) * 0.5, "dmg": dmg_type(sid), "el": el, "tex": "crescent", "scale": 2.0, "pierce": 99,
 			"opts": opts(sid, lv), "color": col, "height": 4.0, "trail": true})
 		VFX.particles(level, p.global_position + aim * 20.0, Color("9a7050"), 10, 70.0, 0.4, Vector2(0, 120), "px", 0.5, 60.0)
 	if hit:
-		level.shake(3.0, 0.15)
-		level.hitstop(0.04)
+		fx_shake(p, level, 3.0, 0.15)
+		fx_hitstop(p, level, 0.04)
 	Sfx.play("crit" if hit else "swing")
 
 
@@ -197,13 +216,13 @@ static func _dash_strike(p: Player, level, sid: String, lv: int, aim: Vector2, c
 	var pw := power(sid, lv)
 	var dt := dmg_type(sid)
 	var step := func(pos: Vector2):
-		for a in level.actors_in_radius(pos, width, "enemy"):
+		for a in level.actors_in_radius(pos, width, p.foe_team()):
 			if hits.has(a.get_instance_id()):
 				continue
 			hits[a.get_instance_id()] = true
 			Combat.hit(p, a, pw, dt, el, o)
 			VFX.hit_spark(level, a.body_center(), col, true)
-			level.hitstop(0.03)
+			fx_hitstop(p, level, 0.03)
 		if fire_trail and Engine.get_physics_frames() % 3 == 0:
 			var z := SkillZone.new()
 			z.caster = p
@@ -234,15 +253,21 @@ static func _buff(p: Player, level, sid: String, lv: int, col: Color, el: String
 	if pp.has("shield_pct"):
 		p.add_shield(p.max_hp * GameData.sp(sid, "shield_pct", lv) / 100.0, dur)
 	if pp.get("party", false):
-		for a in level.get_team_actors("player"):
-			if a != p and a is Ally:
+		# party buffs reach your summons and your party mates (and their summons) nearby
+		for a in level.get_team_actors(p.team):
+			if a == p or a.global_position.distance_to(p.global_position) > 220.0:
+				continue
+			var mate = a.owner_player if a is Ally else a
+			if mate == p or Social.same_party(mate, p):
 				a.add_buff(sid, dur, mods, col, s["name"])
+				if a is Player and a != p:
+					VFX.attach_aura(a, col, 14.0, dur)
 	if pp.has("nova_radius"):
 		var r := float(pp["nova_radius"])
 		VFX.ring(level, p.global_position + Vector2(0, -6), r, col, 0.4, 3.0, 6.0)
 		VFX.particles(level, p.global_position, col, 24, r * 3.0, 0.5, Vector2(0, -40), "soft", 0.4)
 		hit_area(p, level, p.global_position, r, sid, lv, el, {"knock": 100.0})
-		level.shake(3.0, 0.2)
+		fx_shake(p, level, 3.0, 0.2)
 		Sfx.play("roar", 0.05, 0.7)
 	VFX.pillar(level, p.global_position, 6.0, 60.0, col, 0.5)
 	VFX.particles(level, p.global_position + Vector2(0, -10), col, 20, 50.0, 0.8, Vector2(0, -50), "spark", 0.5)
@@ -260,7 +285,7 @@ static func _spin(p: Player, level, sid: String, lv: int, col: Color, el: String
 	p.slow_for(GameData.sp(sid, "move_mult", lv), dur)
 	p.spin_t = dur
 	var n := int(dur / tick)
-	var tw = level.create_tween()
+	var tw = _tw(p, level)
 	for i in n:
 		tw.tween_callback(func():
 			if not is_instance_valid(p) or p.dead:
@@ -280,12 +305,14 @@ static func _line_eruption(p: Player, level, sid: String, lv: int, aim: Vector2,
 	var hits := {}
 	var start := p.global_position
 	p.lock(0.2)
-	level.shake(2.0, 0.15)
-	var tw = level.create_tween()
+	fx_shake(p, level, 2.0, 0.15)
+	var tw = _tw(p, level)
 	for i in count:
 		tw.tween_interval(delay)
 		var pos := start + aim * spacing * (i + 1)
 		tw.tween_callback(func():
+			if not is_instance_valid(p):
+				return  # the caster is gone (e.g. an adventurer walked out of range): the skill fizzles
 			if level.ray_blocked(start, pos):
 				return
 			VFX.spike(level, pos, "spike_rock", 1.2 + 0.05 * i, 0.7)
@@ -293,7 +320,7 @@ static func _line_eruption(p: Player, level, sid: String, lv: int, aim: Vector2,
 			VFX.spike(level, pos - aim.orthogonal() * 7.0, "spike_rock", 0.9, 0.6)
 			VFX.ground_ring(level, pos, r, col, 0.3, 1.5)
 			Sfx.play("earth", 0.1, 0.5)
-			for a in level.actors_in_radius(pos, r, "enemy"):
+			for a in level.actors_in_radius(pos, r, p.foe_team()):
 				if hits.has(a.get_instance_id()):
 					continue
 				hits[a.get_instance_id()] = true
@@ -308,12 +335,14 @@ static func _leap(p: Player, level, sid: String, lv: int, target: Vector2, col: 
 	var tm := GameData.sp(sid, "time", lv, 0.5)
 	VFX.telegraph(level, to, r, col, tm)
 	var land := func():
+		if not is_instance_valid(p):
+			return  # the caster is gone (e.g. an adventurer walked out of range): the skill fizzles
 		VFX.element_burst(level, p.global_position, el, r)
 		for k in 6:
 			VFX.spike(level, p.global_position + Vector2.from_angle(k * TAU / 6.0) * r * 0.6, "spike_rock", 1.0, 0.5)
 		hit_area(p, level, p.global_position, r, sid, lv, el, {"knock": 180.0})
-		level.shake(6.0, 0.3)
-		level.hitstop(0.06)
+		fx_shake(p, level, 6.0, 0.3)
+		fx_hitstop(p, level, 0.06)
 	p.start_leap(to, tm, GameData.sp(sid, "height", lv, 40.0), land)
 	Sfx.play("dash")
 
@@ -323,6 +352,8 @@ static func _shield(p: Player, level, sid: String, lv: int, col: Color, el: Stri
 	p.add_shield(amt, GameData.sp(sid, "dur", lv))
 	var br := GameData.sp(sid, "burst_radius", lv, 60.0)
 	p.shield_burst = func():
+		if not is_instance_valid(p):
+			return  # the caster is gone (e.g. an adventurer walked out of range): the skill fizzles
 		VFX.element_burst(level, p.global_position, "water", br)
 		VFX.ring(level, p.global_position + Vector2(0, -8), br, col, 0.4, 3.0, 8.0)
 		hit_area(p, level, p.global_position, br, sid, lv, el, {"knock": 160.0})
@@ -339,14 +370,16 @@ static func _sky_drop(p: Player, level, sid: String, lv: int, target: Vector2, c
 	var pw := power(sid, lv)
 	var burn: float = GameData.SKILLS[sid]["p"].get("burn_ground", 0.0)
 	var impact := func():
+		if not is_instance_valid(p):
+			return  # the caster is gone (e.g. an adventurer walked out of range): the skill fizzles
 		VFX.element_burst(level, pos, el, r)
 		VFX.explosion(level, pos, r * 0.8, col, "")
-		for a in level.actors_in_radius(pos, r, "enemy"):
+		for a in level.actors_in_radius(pos, r, p.foe_team()):
 			var o := opts(sid, lv, {"knock": 170.0, "knock_dir": (a.global_position - pos).normalized()})
 			Combat.hit(p, a, pw, dmg_type(sid), el, o)
 		level.hit_props(pos, r, p)
-		level.shake(7.0, 0.35)
-		level.hitstop(0.05)
+		fx_shake(p, level, 7.0, 0.35)
+		fx_hitstop(p, level, 0.05)
 		if burn > 0.0:
 			var z := SkillZone.new()
 			z.caster = p
@@ -363,7 +396,7 @@ static func _sky_drop(p: Player, level, sid: String, lv: int, target: Vector2, c
 				VFX.particles(level, pos + Vector2.from_angle(k) * r * 0.4, Color("ff8a3a"), 6, 20.0, 1.0, Vector2(0, -40), "soft", 0.4)
 	match fxname:
 		"pillar":
-			var tw = level.create_tween()
+			var tw = _tw(p, level)
 			tw.tween_interval(delay)
 			tw.tween_callback(func():
 				VFX.pillar(level, pos, r * 0.35, 220.0, col, 0.6)
@@ -398,7 +431,7 @@ static func _projectile(p: Player, level, sid: String, lv: int, aim: Vector2, co
 				d = aim.rotated(TAU * i / count)
 			else:
 				d = aim.rotated(-spread * 0.5 + spread * i / (count - 1))
-		Projectile.spawn(level, p.global_position + d * 8.0, d, {"attacker": p, "team": "player", "speed": float(pp.get("speed", 300.0)),
+		Projectile.spawn(level, p.global_position + d * 8.0, d, {"attacker": p, "team": p.team, "foe": p.foe_team(), "speed": float(pp.get("speed", 300.0)),
 			"range": float(pp.get("range", 260.0)), "power": power(sid, lv), "dmg": dmg_type(sid), "el": el,
 			"opts": opts(sid, lv, extra_opts), "tex": tex, "pierce": int(pp.get("pierce", 0)), "explode": float(pp.get("explode", 0.0)),
 			"homing": float(pp.get("homing", 0.0)), "scale": float(pp.get("scale", 1.0)), "color": col, "trail": true,
@@ -412,7 +445,7 @@ static func _lob(p: Player, level, sid: String, lv: int, target: Vector2, col: C
 	var to := _clamp_target(p, target, float(pp.get("range", 160.0)))
 	var r := float(pp.get("radius", 36.0))
 	VFX.telegraph(level, to, r, col, float(pp.get("time", 0.6)))
-	Projectile.spawn(level, p.global_position, (to - p.global_position).normalized(), {"attacker": p, "team": "player",
+	Projectile.spawn(level, p.global_position, (to - p.global_position).normalized(), {"attacker": p, "team": p.team, "foe": p.foe_team(),
 		"power": power(sid, lv), "dmg": dmg_type(sid), "el": el, "opts": opts(sid, lv, {"knock": 150.0}), "tex": pp.get("proj", "rock"),
 		"explode": r, "scale": float(pp.get("scale", 1.0)), "lob": float(pp.get("time", 0.6)), "lob_height": float(pp.get("height", 50.0)),
 		"target": to, "color": col})
@@ -426,15 +459,17 @@ static func _rain(p: Player, level, sid: String, lv: int, target: Vector2, col: 
 	var rate := GameData.sp(sid, "rate", lv, 10.0)
 	VFX.telegraph(level, center, r, col, 0.4)
 	var n := int(dur * rate)
-	var tw = level.create_tween()
+	var tw = _tw(p, level)
 	tw.tween_interval(0.3)
 	for i in n:
 		tw.tween_callback(func():
+			if not is_instance_valid(p):
+				return  # the caster is gone (e.g. an adventurer walked out of range): the skill fizzles
 			var off := Vector2.from_angle(randf() * TAU) * sqrt(randf()) * r
 			var pos := center + Vector2(off.x, off.y * 0.7)
 			VFX.beam(level, pos + Vector2(-14, -90), pos, 1.5, col.lightened(0.3), 0.12)
 			VFX.particles(level, pos, col, 3, 30.0, 0.3, Vector2(0, -20), "soft", 0.3)
-			for a in level.actors_in_radius(pos, 12.0, "enemy"):
+			for a in level.actors_in_radius(pos, 12.0, p.foe_team()):
 				Combat.hit(p, a, power(sid, lv), dmg_type(sid), el, opts(sid, lv, {"no_flash": true})))
 		tw.tween_interval(1.0 / rate)
 	Sfx.play("shoot")
@@ -463,7 +498,7 @@ static func _backstep(p: Player, level, sid: String, lv: int, aim: Vector2, col:
 	var spr := deg_to_rad(GameData.sp(sid, "spread", lv))
 	for i in n:
 		var d := aim.rotated(-spr * 0.5 + spr * i / maxf(1.0, n - 1))
-		Projectile.spawn(level, p.global_position + d * 8.0, d, {"attacker": p, "team": "player", "speed": 380.0, "range": 240.0,
+		Projectile.spawn(level, p.global_position + d * 8.0, d, {"attacker": p, "team": p.team, "foe": p.foe_team(), "speed": 380.0, "range": 240.0,
 			"power": power(sid, lv), "dmg": dmg_type(sid), "el": el, "opts": opts(sid, lv, {"knock": 70.0}), "tex": "arrow", "color": col,
 			"trail": true, "height": 14.0})
 	Sfx.play("shoot")
@@ -493,16 +528,18 @@ static func _beam(p: Player, level, sid: String, lv: int, aim: Vector2, col: Col
 	var start := p.global_position
 	VFX.line_telegraph(level, start, aim, length, width, col, delay)
 	p.lock(delay + 0.1)
-	var tw = level.create_tween()
+	var tw = _tw(p, level)
 	tw.tween_interval(delay)
 	tw.tween_callback(func():
+		if not is_instance_valid(p):
+			return  # the caster is gone (e.g. an adventurer walked out of range): the skill fizzles
 		var from := start + Vector2(0, -12)
 		VFX.beam(level, from, from + aim * length, width, col, 0.45)
 		VFX.particles(level, from, col, 20, 120.0, 0.4, Vector2.ZERO, "spark", 0.6, 30.0, aim)
-		for a in level.actors_in_line(start, aim, length, width * 0.5, "enemy"):
+		for a in level.actors_in_line(start, aim, length, width * 0.5, p.foe_team()):
 			Combat.hit(p, a, power(sid, lv), dmg_type(sid), el, opts(sid, lv, {"knock": 120.0, "knock_dir": aim}))
 			VFX.hit_spark(level, a.body_center(), col, true)
-		level.shake(4.0, 0.2)
+		fx_shake(p, level, 4.0, 0.2)
 		Sfx.play("light"))
 
 
@@ -510,7 +547,7 @@ static func _teleport_strike(p: Player, level, sid: String, lv: int, target: Vec
 	var rng := GameData.sp(sid, "range", lv)
 	var best: Actor = null
 	var bd := 1e9
-	for a in level.actors_in_radius(p.global_position, rng, "enemy"):
+	for a in level.actors_in_radius(p.global_position, rng, p.foe_team()):
 		var d = a.global_position.distance_to(target)
 		if d < bd:
 			bd = d
@@ -533,7 +570,7 @@ static func _teleport_strike(p: Player, level, sid: String, lv: int, target: Vec
 	VFX.slash(level, p.global_position + Vector2(0, -10), -dir, 26.0, 140.0, col, 0.22, 5.0)
 	Combat.hit(p, best, power(sid, lv), dmg_type(sid), el, opts(sid, lv, {"knock": 80.0, "knock_dir": -dir, "crit_bonus": 20.0}))
 	VFX.hit_spark(level, best.body_center(), col, true)
-	level.hitstop(0.05)
+	fx_hitstop(p, level, 0.05)
 	Sfx.play("dark")
 	return true
 
@@ -545,7 +582,7 @@ static func _flurry(p: Player, level, sid: String, lv: int, aim: Vector2, col: C
 	var r := float(pp.get("radius", 30.0))
 	var arc := float(pp.get("arc", 80.0))
 	p.lock(hits_n * interval + 0.05)
-	var tw = level.create_tween()
+	var tw = _tw(p, level)
 	for i in hits_n:
 		tw.tween_callback(func():
 			if not is_instance_valid(p) or p.dead:
@@ -553,7 +590,7 @@ static func _flurry(p: Player, level, sid: String, lv: int, aim: Vector2, col: C
 			var a2 := p.aim.rotated(randf_range(-0.4, 0.4))
 			VFX.slash(level, p.global_position + Vector2(0, -10), a2, r * randf_range(0.7, 1.0), 50.0, col if i % 2 else Color.WHITE, 0.12, 2.5)
 			p._swing(70.0, interval)
-			for a in level.actors_in_arc(p.global_position, p.aim, r + 4.0, arc, "enemy"):
+			for a in level.actors_in_arc(p.global_position, p.aim, r + 4.0, arc, p.foe_team()):
 				Combat.hit(p, a, power(sid, lv), dmg_type(sid), el, opts(sid, lv, {"knock": 25.0, "no_flash": i % 2 == 1}))
 			Sfx.play("swing", 0.2, 0.5))
 		tw.tween_interval(interval)
@@ -566,7 +603,7 @@ static func _smoke(p: Player, level, sid: String, lv: int) -> void:
 	for i in 6:
 		VFX.particles(level, p.global_position + Vector2.from_angle(i) * r * 0.4, Color(0.55, 0.55, 0.6, 0.8), 12, r * 0.8, dur * 0.6, Vector2(0, -6), "smoke", 2.2)
 	VFX.zone(level, p.global_position, "disc", r, Color(0.4, 0.4, 0.45, 0.35), dur)
-	for a in level.actors_in_radius(p.global_position, r, "enemy"):
+	for a in level.actors_in_radius(p.global_position, r, p.foe_team()):
 		a.apply_status("blind", float(status_of(sid, lv).get("dur", 3.0)), 0.0, p)
 		if a is Monster:
 			a.target = null
@@ -578,7 +615,7 @@ static func _multi_blink(p: Player, level, sid: String, lv: int, col: Color, el:
 	var n := int(pp.get("targets", 5)) + int(pp.get("targets_per4", 0)) * (lv / 4)
 	var rng := float(pp.get("range", 200.0))
 	var interval := float(pp.get("interval", 0.12))
-	var cands: Array = level.actors_in_radius(p.global_position, rng, "enemy")
+	var cands: Array = level.actors_in_radius(p.global_position, rng, p.foe_team())
 	if cands.is_empty():
 		return false
 	cands.sort_custom(func(a, b): return a.global_position.distance_to(p.global_position) < b.global_position.distance_to(p.global_position))
@@ -587,7 +624,7 @@ static func _multi_blink(p: Player, level, sid: String, lv: int, col: Color, el:
 		seq.append(cands[i % cands.size()])
 	p.invuln_t = maxf(p.invuln_t, seq.size() * interval + 0.3)
 	p.lock(seq.size() * interval + 0.1)
-	var tw = level.create_tween()
+	var tw = _tw(p, level)
 	for t in seq:
 		tw.tween_callback(func():
 			if not is_instance_valid(t) or t.dead or not is_instance_valid(p):
@@ -635,7 +672,7 @@ static func _nova(p: Player, level, sid: String, lv: int, col: Color, el: String
 	var sh := float(GameData.SKILLS[sid]["p"].get("self_heal", 0.0))
 	if sh > 0.0:
 		p.heal(p.max_hp * sh / 100.0)
-	level.shake(3.0, 0.2)
+	fx_shake(p, level, 3.0, 0.2)
 
 
 static func _zone(p: Player, level, sid: String, lv: int, target: Vector2, aim: Vector2, col: Color, el: String) -> void:
@@ -677,7 +714,7 @@ static func _channel_beam(p: Player, level, sid: String, lv: int, col: Color, el
 	var width := GameData.sp(sid, "width", lv)
 	p.slow_for(0.25, dur)
 	var n := int(dur / tick)
-	var tw = level.create_tween()
+	var tw = _tw(p, level)
 	var hue := [0.0]
 	for i in n:
 		tw.tween_callback(func():
@@ -689,7 +726,7 @@ static func _channel_beam(p: Player, level, sid: String, lv: int, col: Color, el
 			var c := Color.from_hsv(hue[0], 0.35, 1.0)
 			VFX.beam(level, from, from + dir * length, width, c, tick * 1.6)
 			VFX.particles(level, from + dir * length, c, 3, 50.0, 0.2, Vector2.ZERO, "spark", 0.4)
-			for a in level.actors_in_line(p.global_position, dir, length, width * 0.5 + 2.0, "enemy"):
+			for a in level.actors_in_line(p.global_position, dir, length, width * 0.5 + 2.0, p.foe_team()):
 				Combat.hit(p, a, power(sid, lv), dmg_type(sid), el, opts(sid, lv, {"no_flash": true}))
 			if i % 3 == 0:
 				Sfx.play("light", 0.1, 0.3))
@@ -702,33 +739,35 @@ static func _quake(p: Player, level, sid: String, lv: int, col: Color, el: Strin
 	var r := GameData.sp(sid, "radius", lv)
 	var area := GameData.sp(sid, "area", lv)
 	p.lock(0.3)
-	var tw = level.create_tween()
+	var tw = _tw(p, level)
 	for i in count:
 		tw.tween_interval(dur / count)
 		tw.tween_callback(func():
 			if not is_instance_valid(p):
 				return
 			var pos := p.global_position + Vector2.from_angle(randf() * TAU) * randf_range(20.0, area)
-			var near = level.nearest_actor(p.global_position, area, "enemy")
+			var near = level.nearest_actor(p.global_position, area, p.foe_team())
 			if near and randf() < 0.5:
 				pos = near.global_position
 			VFX.telegraph(level, pos, r, col, 0.25)
-			var tw2 = level.create_tween()
+			var tw2 = _tw(p, level)
 			tw2.tween_interval(0.25)
 			tw2.tween_callback(func():
+				if not is_instance_valid(p):
+					return  # the caster is gone (e.g. an adventurer walked out of range): the skill fizzles
 				VFX.element_burst(level, pos, "earth", r)
 				for k in 4:
 					VFX.spike(level, pos + Vector2.from_angle(k * TAU / 4.0 + 0.4) * r * 0.5, "spike_rock", 1.2, 0.6)
 				VFX.spike(level, pos, "spike_rock", 1.6, 0.7)
 				hit_area(p, level, pos, r, sid, lv, el, {"knock": 90.0})))
-	level.shake(2.0, dur)
+	fx_shake(p, level, 2.0, dur)
 
 
 static func _heal(p: Player, level, sid: String, lv: int) -> void:
 	var pct := GameData.sp(sid, "pct", lv)
-	var amt := (p.max_hp * pct / 100.0 + float(Game.stats.get("matk", 0.0)) * power(sid, lv) / 100.0) * (1.0 + float(Game.stats.get("heal_pct", 0.0)) / 100.0)
+	var amt := (p.max_hp * pct / 100.0 + float(p.st.get("matk", 0.0)) * power(sid, lv) / 100.0) * (1.0 + float(p.st.get("heal_pct", 0.0)) / 100.0)
 	var r := GameData.sp(sid, "radius", lv, 80.0)
-	for a in level.actors_in_radius(p.global_position, r, "player"):
+	for a in level.actors_in_radius(p.global_position, r, p.team):
 		a.heal(amt if a == p else amt * 0.6)
 		VFX.pillar(level, a.global_position, 6.0, 70.0, Color("7be05a"), 0.6)
 		VFX.particles(level, a.global_position + Vector2(0, -10), Color("b8ffb0"), 18, 40.0, 0.9, Vector2(0, -40), "spark", 0.6)
@@ -739,14 +778,14 @@ static func _heal(p: Player, level, sid: String, lv: int) -> void:
 static func _debuff_area(p: Player, level, sid: String, lv: int, target: Vector2, col: Color, el: String) -> void:
 	var pos := _clamp_target(p, target, GameData.sp(sid, "range", lv, 160.0))
 	var r := GameData.sp(sid, "radius", lv)
-	var dur := GameData.sp(sid, "dur", lv) * (1.0 + float(Game.stats.get("debuff_pct", 0.0)) / 100.0)
+	var dur := GameData.sp(sid, "dur", lv) * (1.0 + float(p.st.get("debuff_pct", 0.0)) / 100.0)
 	var mods := GameData.skill_mods(sid, lv)
-	var hex := 1.0 + float(Game.stats.get("debuff_pct", 0.0)) / 100.0
+	var hex := 1.0 + float(p.st.get("debuff_pct", 0.0)) / 100.0
 	for k in mods:
 		mods[k] = float(mods[k]) * hex
 	VFX.zone(level, pos, "vortex", r, col, 0.8)
 	VFX.particles(level, pos, col, 26, 40.0, 1.2, Vector2(0, -30), "soft", 0.5)
-	for a in level.actors_in_radius(pos, r, "enemy"):
+	for a in level.actors_in_radius(pos, r, p.foe_team()):
 		a.add_buff("curse_area", dur, mods, col, "Cursed")
 		a.apply_status("curse", dur, 0.0, p)
 		Combat.hit(p, a, power(sid, lv), dmg_type(sid), el, {"skill": true})
@@ -760,17 +799,17 @@ static func _drain_beam(p: Player, level, sid: String, lv: int, col: Color, el: 
 	var heal_pct := GameData.sp(sid, "heal", lv)
 	var maxt := int(GameData.sp(sid, "targets", lv, 3.0))
 	p.slow_for(0.4, dur)
-	var tw = level.create_tween()
+	var tw = _tw(p, level)
 	for i in int(dur / tick):
 		tw.tween_callback(func():
 			if not is_instance_valid(p) or p.dead:
 				return
-			var cands: Array = level.actors_in_radius(p.global_position, rng, "enemy")
+			var cands: Array = level.actors_in_radius(p.global_position, rng, p.foe_team())
 			cands.sort_custom(func(a, b): return a.global_position.distance_to(p.global_position) < b.global_position.distance_to(p.global_position))
 			for k in mini(maxt, cands.size()):
 				var t: Actor = cands[k]
 				var dealt := Combat.hit(p, t, power(sid, lv), dmg_type(sid), el, {"no_flash": true, "skill": true})
-				p.heal(dealt * heal_pct / 100.0 * (1.0 + float(Game.stats.get("heal_pct", 0.0)) / 100.0), false)
+				p.heal(dealt * heal_pct / 100.0 * (1.0 + float(p.st.get("heal_pct", 0.0)) / 100.0), false)
 				VFX.beam(level, t.body_center(), p.body_center(), 2.5, Color("c0304a"), tick * 1.5)
 				VFX.particles(level, t.body_center(), Color("e43b44"), 3, 30.0, 0.3, Vector2.ZERO, "soft", 0.3)
 			if i % 3 == 0:

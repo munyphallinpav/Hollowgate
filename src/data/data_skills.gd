@@ -410,7 +410,7 @@ const SKILLS := {
 		"row": 0, "col": 3, "req": {}, "max": 10, "mods": {"move_pct": 1.5},
 		"desc": "Increases Move Speed."},
 	"battle_focus": {"name": "Battle Focus", "cls": "common", "type": "active", "el": "wind", "glyph": "eye",
-		"row": 1, "col": 0, "req": {"second_wind": 2}, "max": 10, "mp": 20, "mp_lv": 2, "cd": 30.0, "dmg": "none", "pow": 0, "pow_lv": 0,
+		"row": 1, "col": 0, "req": {"second_wind": 1}, "max": 10, "mp": 20, "mp_lv": 2, "cd": 30.0, "dmg": "none", "pow": 0, "pow_lv": 0,
 		"kind": "buff", "p": {"dur": 10, "dur_lv": 0.5, "mods": {"crit": 10, "aspd_pct": 10}, "mods_lv": {"crit": 1, "aspd_pct": 1}, "aura": "wind"},
 		"desc": "Sharpen your senses: Crit Rate and Attack Speed."},
 	"dash_mastery": {"name": "Dash Mastery", "cls": "common", "type": "passive", "el": "none", "glyph": "dash",

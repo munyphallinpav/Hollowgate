@@ -63,6 +63,9 @@ class HpBar extends Node2D:
 		var r := clampf(m.hp / m.max_hp, 0.0, 1.0)
 		draw_rect(Rect2(-w / 2.0 - 1, -1, w + 2, 4), Color(0.05, 0.03, 0.08, 0.85))
 		var col := Color("e43b44") if m.tier == "normal" else (Color("ffb347") if m.tier == "mini" else Color("8fd3ff"))
+		var owner = m.tag_owner()
+		if owner != null and not owner.is_hero():
+			col = Color("9a94b8")  # claimed by an NPC adventurer: its kill, its loot
 		draw_rect(Rect2(-w / 2.0, 0, w * r, 2), col)
 
 
@@ -450,8 +453,35 @@ func wake() -> void:
 	hurt_alert = 3.0
 
 
+## Kill tagging (as in online RPGs): the first hero or NPC adventurer to damage a monster owns its
+## XP and loot, no matter who lands the final blow. The tag frees up if its owner dies or leaves.
+var tag: Player = null
+
+
+func tag_owner() -> Player:
+	if tag != null and is_instance_valid(tag) and not tag.dead and tag.is_inside_tree():
+		return tag
+	tag = null
+	return null
+
+
+## Resolves who is behind a hit (summons count for their owner).
+static func hero_behind(src) -> Player:
+	if src == null or not is_instance_valid(src):
+		return null
+	if src is Ally:
+		return src.owner_player if is_instance_valid(src.owner_player) else null
+	if src is Player:
+		return src
+	return null
+
+
 func on_hurt(_amount: int, info: Dictionary) -> void:
 	hurt_alert = 3.0
+	if tag_owner() == null:
+		var h := hero_behind(info.get("src"))
+		if h != null:
+			tag = h
 	if hpbar:
 		hpbar.queue_redraw()
 	if dormant:

@@ -1,17 +1,12 @@
 ; Engine configuration file.
-; It's best edited using the editor UI and not directly,
-; since the parameters that go here are not all obvious.
-;
-; Format:
-;   [section] ; section goes between []
-;   param=value ; assign values to parameters
+; Hollowgate - 2.5D pixel art action RPG / survival.
 
 config_version=5
 
 [application]
 
 config/name="Hollowgate"
-config/description="2.5D pixel-art action RPG / survival with hidden dungeons and a dungeon editor."
+config/description="2.5D pixel-art action RPG / survival with hidden dungeons, a dungeon editor, NPC adventurers and a guild Dungeon Hall."
 run/main_scene="res://scenes/main.tscn"
 config/features=PackedStringArray("4.4", "GL Compatibility")
 config/icon="res://icon.png"
@@ -23,6 +18,7 @@ Art="*res://src/autoload/art.gd"
 Settings="*res://src/autoload/settings.gd"
 Sfx="*res://src/autoload/sfx.gd"
 Game="*res://src/autoload/game.gd"
+DebugMode="*res://src/autoload/debug_mode.gd"
 
 [display]
 
@@ -33,8 +29,8 @@ window/stretch/aspect="expand"
 
 [gui]
 
-timers/tooltip_delay_sec=0.2
 common/drop_mouse_on_gui_input_disabled=true
+timers/tooltip_delay_sec=0.2
 
 [layer_names]
 
@@ -45,11 +41,13 @@ common/drop_mouse_on_gui_input_disabled=true
 
 [physics]
 
+common/physics_ticks_per_second=60
 2d/default_gravity=0.0
 
 [rendering]
 
-textures/canvas_textures/default_texture_filter=0
 renderer/rendering_method="gl_compatibility"
 renderer/rendering_method.mobile="gl_compatibility"
+textures/canvas_textures/default_texture_filter=0
+2d/snap/snap_2d_vertices_to_pixel=false
 environment/defaults/default_clear_color=Color(0.043, 0.039, 0.07, 1)

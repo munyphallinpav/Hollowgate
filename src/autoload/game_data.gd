@@ -8,7 +8,7 @@ const WorldData = preload("res://src/data/data_world.gd")
 const MAX_LEVEL := 100
 const STAT_POINTS_PER_LEVEL := 10
 const SKILL_POINTS_PER_LEVEL := 5
-const COMMON_TIER_LEVELS := [1, 15, 30, 1]
+const COMMON_TIER_LEVELS := [1, 3, 30, 1]
 
 var SKILLS: Dictionary = SkillData.SKILLS
 var CLASSES: Dictionary = WorldData.CLASSES

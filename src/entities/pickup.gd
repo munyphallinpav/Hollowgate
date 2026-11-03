@@ -107,15 +107,26 @@ func _can_take() -> bool:
 
 func _collect(p) -> void:
 	var lv = Game.level_node
+	var guild_run: bool = not Game.guild_run.is_empty() and lv is DungeonLevel
 	if gold > 0:
-		Game.add_gold(gold)
+		var keep := NpcWorld.tribute_gold(gold) if guild_run else gold
+		Game.add_gold(keep)
 		if lv:
-			lv.float_text(global_position + Vector2(0, -16), "+%d g" % gold, Color("fee761"), 0.8)
+			var txt := "+%d g" % keep if keep == gold else "+%d g (share -%d)" % [keep, gold - keep]
+			lv.float_text(global_position + Vector2(0, -16), txt, Color("fee761"), 0.8)
 		Sfx.play("coin", 0.1, 0.6)
 		queue_free()
 		return
 	var name := Items.name_of(item)
 	var qty := int(item.get("qty", 1))
+	if guild_run and NpcWorld.tribute_item(item):
+		var owner_name: String = NpcWorld.listing(int(Game.guild_run["listing"])).get("owner_name", "the owner")
+		if lv:
+			lv.float_text(global_position + Vector2(0, -16), "%s → %s's share" % [name, owner_name], Color("c79bff"), 0.9)
+		Game.toast("%s goes to %s as the dungeon owner's item share." % [name, owner_name], Color("c79bff"))
+		Sfx.play("pickup", 0.1, 0.4)
+		queue_free()
+		return
 	if Game.add_item(item):
 		if lv:
 			lv.float_text(global_position + Vector2(0, -16), name + ("" if qty <= 1 else " x%d" % qty), Items.color_of(item), 0.9)

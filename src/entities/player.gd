@@ -53,18 +53,56 @@ var leap_h := 40.0
 var leap_cb: Callable
 var shield_burst: Callable
 var bot_aim := Vector2.INF  # used by the automated playtest bot instead of the mouse
+## Skill input buffer: a skill key pressed during the global cooldown / an attack animation
+## is remembered briefly and cast as soon as possible instead of being swallowed.
+const SKILL_BUFFER := 0.4
+var queued_slot := -1
+var queued_t := 0.0
+var _hint_t := 0.0
+
+## The same character code drives the hero and the NPC adventurers (see Adventurer).
+## `npc` is empty for the hero; for an adventurer it is its persistent record in Game.world["npcs"].
+var npc: Dictionary = {}
+var _npc_stats: Dictionary = {}
+
+## Persistent character data (class, level, skills, equipment, inventory...).
+var pd: Dictionary:
+	get:
+		return Game.player if npc.is_empty() else npc
+
+## Final computed stats (StatCalc) including buffs.
+var st: Dictionary:
+	get:
+		return Game.stats if npc.is_empty() else _npc_stats
+
+
+func is_hero() -> bool:
+	return npc.is_empty()
+
+
+func recalc_stats() -> void:
+	if is_hero():
+		Game.recalc()
+	else:
+		_npc_stats = StatCalc.compute(npc, buff_mod_list())
+
+
+func skill_lv(sid: String) -> int:
+	return int(pd.get("skills", {}).get(sid, 0))
 
 
 func _ready() -> void:
 	team = "player"
 	add_to_group("team_player")
-	add_to_group("player")
+	add_to_group("player" if is_hero() else "adventurers")
 	radius = 6.0
 	body_height = 22.0
-	collision_layer = 4
+	collision_layer = 4 if is_hero() else 0
 	collision_mask = 1 | 2
-	cls = Game.player["class"]
-	display_name = Game.player["name"]
+	if not is_hero():
+		_npc_stats = StatCalc.compute(npc, [])
+	cls = pd["class"]
+	display_name = pd["name"]
 	build_body("char_" + cls, 1.0)
 	weapon_pivot = Node2D.new()
 	weapon_pivot.position = Vector2(0, -12)
@@ -78,13 +116,20 @@ func _ready() -> void:
 	light.color = Color(1.0, 0.85, 0.6)
 	light.position = Vector2(0, -10)
 	add_child(light)
-	Game.player_node = self
+	if is_hero():
+		Game.player_node = self
+	else:
+		light.enabled = false
 	on_equipment_changed()
-	Game.recalc()
-	max_hp = Game.stats["max_hp"]
-	max_mp = Game.stats["max_mp"]
-	hp = float(Game.player.get("hp", max_hp))
-	mp = float(Game.player.get("mp", max_mp))
+	recalc_stats()
+	max_hp = st["max_hp"]
+	max_mp = st["max_mp"]
+	if is_hero():
+		hp = float(pd.get("hp", max_hp))
+		mp = float(pd.get("mp", max_mp))
+	else:
+		hp = max_hp * float(npc.get("hp_frac", 1.0))
+		mp = max_mp * float(npc.get("mp_frac", 1.0))
 	if hp <= 0.0:
 		hp = max_hp
 	if mp < 0.0:
@@ -95,7 +140,7 @@ func _ready() -> void:
 
 
 func get_stats() -> Dictionary:
-	return Game.stats
+	return st
 
 
 func mouse_pos() -> Vector2:
@@ -107,26 +152,26 @@ func buff_mod_list() -> Array:
 	for b in buffs.values():
 		out.append(b["mods"])
 	if spree_stacks > 0:
-		var v := float(Game.stats.get("spree", 0.0)) * spree_stacks
+		var v := float(st.get("spree", 0.0)) * spree_stacks
 		out.append({"aspd_pct": v, "move_pct": v})
 	return out
 
 
 func _on_buffs_changed() -> void:
-	Game.recalc()
+	recalc_stats()
 	_refresh_max()
 
 
 func _refresh_max() -> void:
 	var r_hp := hp / maxf(1.0, max_hp)
-	max_hp = Game.stats["max_hp"]
-	max_mp = Game.stats["max_mp"]
+	max_hp = st["max_hp"]
+	max_mp = st["max_mp"]
 	hp = minf(hp, max_hp)
 	mp = minf(mp, max_mp)
 
 
 func on_equipment_changed() -> void:
-	var w := StatCalc.weapon_type(Game.player)
+	var w := StatCalc.weapon_type(pd)
 	if w == "":
 		weapon_sprite.texture = null
 	else:
@@ -154,20 +199,61 @@ func on_level_up() -> void:
 
 # ===================================================================== input
 func _unhandled_input(event: InputEvent) -> void:
-	if dead:
+	if dead or not is_hero():
 		return
 	if event.is_action_pressed("attack"):
 		attack_held = true
 
 
+## Called once when the death animation has finished playing.
+func _on_death_finished() -> void:
+	var lv = level_node()
+	if lv:
+		lv.on_player_died()
+
+
+## Reads controls for this frame: mouse/keyboard for the hero, the AI brain for adventurers.
+func _control(_delta: float) -> void:
+	aim = (mouse_pos() - (global_position + Vector2(0, -10))).normalized()
+	if aim == Vector2.ZERO:
+		aim = Vector2.RIGHT
+	if not Input.is_action_pressed("attack"):
+		attack_held = false
+	# skill keys are read every frame (even while locked) and buffered
+	for i in 4:
+		if Input.is_action_just_pressed("skill_%d" % (i + 1)):
+			queued_slot = i
+			queued_t = SKILL_BUFFER
+	move_dir = Vector2.ZERO
+	if lock_t <= 0.0 and can_move():
+		move_dir = Input.get_vector("move_left", "move_right", "move_up", "move_down")
+
+
+## Spectating a test run: the hero is not really there (invisible, untargetable, no input).
+var ghost := false
+
+
+func set_ghost(on: bool) -> void:
+	ghost = on
+	visible = not on
+	invuln_t = 1e9 if on else 0.5
+	collision_layer = 0 if on else (4 if is_hero() else 0)
+	if on:
+		if is_in_group("team_" + team):
+			remove_from_group("team_" + team)
+	else:
+		add_to_group("team_" + team)
+
+
 func _physics_process(delta: float) -> void:
+	if ghost:
+		velocity = Vector2.ZERO
+		return
 	if dead:
 		death_t += delta
 		_update_visual(delta)
 		if death_t > 2.2 and death_t - delta <= 2.2:
-			var lv = level_node()
-			if lv:
-				lv.on_player_died()
+			_on_death_finished()
 		return
 	_update_statuses(delta)
 	if dead:
@@ -176,14 +262,7 @@ func _physics_process(delta: float) -> void:
 	_update_z(delta)
 	_timers(delta)
 	_regen(delta)
-	aim = (mouse_pos() - (global_position + Vector2(0, -10))).normalized()
-	if aim == Vector2.ZERO:
-		aim = Vector2.RIGHT
-	if not Input.is_action_pressed("attack"):
-		attack_held = false
-	move_dir = Vector2.ZERO
-	if lock_t <= 0.0 and can_move():
-		move_dir = Input.get_vector("move_left", "move_right", "move_up", "move_down")
+	_control(delta)
 	if teleport_t >= 0.0:
 		_teleport_channel(delta)
 	if leap_t >= 0.0:
@@ -191,19 +270,23 @@ func _physics_process(delta: float) -> void:
 	elif dash_t > 0.0:
 		_dash_step(delta)
 	else:
-		var spd := float(Game.stats.get("move", 85.0)) * (speed_mult_override if speed_override_t > 0.0 else 1.0)
+		var spd := float(st.get("move", 85.0)) * (speed_mult_override if speed_override_t > 0.0 else 1.0)
+		if DebugMode.fast_move and is_hero():
+			spd *= 2.5
 		if lock_t > 0.0:
 			spd = 0.0
 		move_with(move_dir * spd, delta)
 		if can_act() and lock_t <= 0.0 and not in_air_skill:
 			_handle_actions()
-	_update_interact()
+	if is_hero():
+		_update_interact()
 	_update_anim()
 	_update_weapon(delta)
 	_update_visual(delta)
 	if invisible_t > 0.0:
 		sprite.modulate.a = 0.35
-	light.energy = lerpf(light.energy, level_node().player_light_energy() if level_node() else 0.0, delta * 2.0)
+	if is_hero():
+		light.energy = lerpf(light.energy, level_node().player_light_energy() if level_node() else 0.0, delta * 2.0)
 
 
 func _timers(delta: float) -> void:
@@ -214,6 +297,11 @@ func _timers(delta: float) -> void:
 	attack_cd -= delta
 	dash_cd -= delta
 	gcd -= delta
+	_hint_t -= delta
+	if queued_slot >= 0:
+		queued_t -= delta
+		if queued_t <= 0.0:
+			queued_slot = -1
 	lock_t -= delta
 	anim_lock_t -= delta
 	wind_walker_t -= delta
@@ -224,7 +312,7 @@ func _timers(delta: float) -> void:
 		spree_t -= delta
 		if spree_t <= 0.0:
 			spree_stacks = 0
-			Game.recalc()
+			recalc_stats()
 	if not enchant.is_empty():
 		enchant["t"] = float(enchant["t"]) - delta
 		if float(enchant["t"]) <= 0.0:
@@ -236,13 +324,15 @@ func _handle_actions() -> void:
 	if Input.is_action_just_pressed("dash"):
 		try_dash()
 		return
+	if queued_slot >= 0:
+		_process_queued_skill()
 	for i in 4:
-		if Input.is_action_just_pressed("skill_%d" % (i + 1)):
-			var sid: String = Game.player["hot_skills"][i]
-			if sid != "":
-				try_cast(sid)
 		if Input.is_action_just_pressed("item_%d" % (i + 1)):
-			Game.use_hot_item(i)
+			if pd["hot_items"][i] == "":
+				_slot_hint("Consumable slot %s is empty — right-click a potion or food in your Inventory (%s) and choose 'Assign to hotkey'." % [
+					Settings.action_text("item_%d" % (i + 1)), Settings.action_text("open_inventory")])
+			else:
+				Game.use_hot_item(i)
 	if Input.is_action_just_pressed("interact") and interact_target and is_instance_valid(interact_target):
 		interact_target.interact(self)
 		return
@@ -252,17 +342,53 @@ func _handle_actions() -> void:
 		basic_attack()
 
 
+func _process_queued_skill() -> void:
+	var i := queued_slot
+	var sid: String = pd["hot_skills"][i]
+	var key := Settings.action_text("skill_%d" % (i + 1))
+	if sid == "":
+		queued_slot = -1
+		_slot_hint("Skill slot %s is empty — open Skills (%s), select an active skill you have learned and press 'Equip to: %s' (or drag it onto the slot)." % [
+			key, Settings.action_text("open_skills"), key])
+		return
+	if gcd > 0.0:
+		return  # keep it buffered until the global cooldown ends
+	if skill_cds.has(sid):
+		if float(skill_cds[sid]) > queued_t:
+			queued_slot = -1
+			if _hint_t <= 0.0 and level_node():
+				_hint_t = 0.4
+				level_node().float_text(global_position + Vector2(0, -34), "%s: %.1fs" % [GameData.SKILLS[sid]["name"], float(skill_cds[sid])], Color("aab4c8"), 0.8)
+		return
+	queued_slot = -1
+	try_cast(sid)
+
+
+## Short on-screen help when an empty hotbar slot is pressed (throttled so it never spams).
+func _slot_hint(text: String) -> void:
+	if _hint_t > 0.0:
+		return
+	_hint_t = 3.0
+	Game.toast(text, Color("ffd27a"))
+	Sfx.play("error")
+
+
 # ===================================================================== regen / hunger
 func _regen(delta: float) -> void:
-	var sat: float = Game.player.get("satiety", 100.0)
-	var hunger_rate := 100.0 / 1200.0 * (1.0 - minf(80.0, float(Game.stats.get("hunger_pct", 0.0))) / 100.0)
+	if not is_hero():
+		# adventurers eat in town; out here they only regenerate
+		hp = minf(max_hp, hp + float(st.get("hp_regen", 0.0)) * delta)
+		mp = minf(max_mp, mp + float(st.get("mp_regen", 0.0)) * delta)
+		return
+	var sat: float = pd.get("satiety", 100.0)
+	var hunger_rate := 100.0 / 1200.0 * (1.0 - minf(80.0, float(st.get("hunger_pct", 0.0))) / 100.0)
 	if level_node() and level_node().is_town():
 		hunger_rate *= 0.3
 	sat = maxf(0.0, sat - hunger_rate * delta)
-	Game.player["satiety"] = sat
+	pd["satiety"] = sat
 	var regen_mult := 1.0 if sat > 20.0 else (0.4 if sat > 0.0 else 0.0)
-	hp = minf(max_hp, hp + float(Game.stats.get("hp_regen", 0.0)) * regen_mult * delta)
-	mp = minf(max_mp, mp + float(Game.stats.get("mp_regen", 0.0)) * delta)
+	hp = minf(max_hp, hp + float(st.get("hp_regen", 0.0)) * regen_mult * delta)
+	mp = minf(max_mp, mp + float(st.get("mp_regen", 0.0)) * delta)
 	if sat <= 0.0:
 		hunger_tick += delta
 		if hunger_tick >= 2.0:
@@ -279,15 +405,15 @@ func try_dash() -> void:
 		return
 	var d := move_dir if move_dir != Vector2.ZERO else aim
 	dash_vec = d.normalized()
-	var dist := DASH_BASE_DIST * (1.0 + float(Game.stats.get("dash_dist_pct", 0.0)) / 100.0)
+	var dist := DASH_BASE_DIST * (1.0 + float(st.get("dash_dist_pct", 0.0)) / 100.0)
 	dash_t = DASH_TIME
 	dash_total = DASH_TIME
 	dash_step_cb = Callable()
 	dash_hop = 0.0
 	dash_vec *= dist / DASH_TIME
-	dash_cd = DASH_BASE_CD * (1.0 - float(Game.stats.get("dash_cd_pct", 0.0)) / 100.0)
+	dash_cd = DASH_BASE_CD * (1.0 - float(st.get("dash_cd_pct", 0.0)) / 100.0)
 	invuln_t = maxf(invuln_t, DASH_TIME + 0.08)
-	if float(Game.stats.get("wind_walker", 0.0)) > 0.0:
+	if float(st.get("wind_walker", 0.0)) > 0.0:
 		wind_walker_t = 2.0
 	teleport_t = -1.0
 	Sfx.play("dash")
@@ -391,7 +517,7 @@ func _update_anim() -> void:
 		base = "walk"
 	play_anim(base + "_" + dir_name)
 	if base == "walk":
-		sprite.speed_scale = clampf(float(Game.stats.get("move", 85.0)) / 85.0, 0.6, 2.0)
+		sprite.speed_scale = clampf(float(st.get("move", 85.0)) / 85.0, 0.6, 2.0)
 	elif sprite.speed_scale != 0.0:
 		sprite.speed_scale = 1.0
 
@@ -404,7 +530,7 @@ func set_action_anim(kind: String, dur: float) -> void:
 
 
 func _update_weapon(delta: float) -> void:
-	var w := StatCalc.weapon_type(Game.player)
+	var w := StatCalc.weapon_type(pd)
 	weapon_pivot.z_index = -1 if dir_name == "up" else 1
 	var ang := aim.angle()
 	if spin_t > 0.0:
@@ -435,29 +561,31 @@ func _update_weapon(delta: float) -> void:
 
 # ===================================================================== combat
 func is_specialized() -> bool:
-	return Game.is_specialized_weapon()
+	var w := StatCalc.weapon_type(pd)
+	var cw: String = GameData.CLASSES[pd["class"]]["weapon"]
+	return w == cw or (cw in ["wand", "grimoire"] and w in ["wand", "grimoire"])
 
 
 func damage_out_mult() -> float:
 	var m := 1.0
 	if is_specialized():
 		m *= 1.15
-	if hp < max_hp * 0.35 and float(Game.stats.get("low_hp_atk", 0.0)) > 0.0:
-		m *= 1.0 + float(Game.stats["low_hp_atk"]) / 100.0
-	if wind_walker_t > 0.0 and float(Game.stats.get("wind_walker", 0.0)) > 0.0:
-		m *= 1.0 + float(Game.stats["wind_walker"]) / 100.0
+	if hp < max_hp * 0.35 and float(st.get("low_hp_atk", 0.0)) > 0.0:
+		m *= 1.0 + float(st["low_hp_atk"]) / 100.0
+	if wind_walker_t > 0.0 and float(st.get("wind_walker", 0.0)) > 0.0:
+		m *= 1.0 + float(st["wind_walker"]) / 100.0
 	return m
 
 
 func attack_speed() -> float:
-	var s := float(Game.stats.get("aspd", 1.0))
+	var s := float(st.get("aspd", 1.0))
 	if is_specialized():
 		s *= 1.10
 	return s
 
 
 func basic_attack() -> void:
-	var w := StatCalc.weapon_type(Game.player)
+	var w := StatCalc.weapon_type(pd)
 	var g: Dictionary = GameData.ItemData.GEAR.get(w, {})
 	var atk: Dictionary = g.get("attack", {"style": "melee", "radius": 22, "arc": 100, "cd": 0.5, "mult": 0.6, "knock": 40})
 	var aspd := attack_speed()
@@ -468,9 +596,9 @@ func basic_attack() -> void:
 	if not enchant.is_empty():
 		el = enchant["el"]
 		power *= 1.0 + float(enchant["bonus"]) / 100.0
-	var opts := {"basic": true, "knock": float(atk.get("knock", 50)) * (1.0 + float(Game.stats.get("knock_pct", 0.0)) / 100.0)}
-	if float(Game.stats.get("poison_hit", 0.0)) > 0.0:
-		opts["status"] = {"id": "poison", "chance": Game.stats["poison_hit"], "dur": 4.0, "power": 25.0}
+	var opts := {"basic": true, "knock": float(atk.get("knock", 50)) * (1.0 + float(st.get("knock_pct", 0.0)) / 100.0)}
+	if float(st.get("poison_hit", 0.0)) > 0.0:
+		opts["status"] = {"id": "poison", "chance": st["poison_hit"], "dur": 4.0, "power": 25.0}
 	if el != "none" and not opts.has("status"):
 		opts["status"] = {"id": GameData.WorldData.ELEMENT_STATUS[el], "chance": 15.0, "dur": 2.5}
 	var lv = level_node()
@@ -487,16 +615,16 @@ func basic_attack() -> void:
 				VFX.beam(lv, origin + aim * 6.0, origin + aim * (r + 4.0), 3.0, col, 0.14)
 			else:
 				VFX.slash(lv, origin, aim, r, arc, col, 0.2, 3.5 if w != "hammer" else 5.0)
-			if w == "hammer":
+			if w == "hammer" and is_hero():
 				lv.shake(1.5, 0.1)
 			var hit_any := false
-			for a in lv.actors_in_arc(global_position, aim, r + 4.0, arc, "enemy"):
+			for a in lv.actors_in_arc(global_position, aim, r + 4.0, arc, foe_team()):
 				Combat.hit(self, a, power, dmg_type, el, opts.merged({"knock_dir": (a.global_position - global_position).normalized()}))
 				VFX.hit_spark(lv, a.body_center(), col)
 				hit_any = true
 			lv.hit_props(global_position + aim * r * 0.7, r * 0.7, self)
 			Sfx.play("hit" if hit_any else "swing")
-			if hit_any and w == "hammer":
+			if hit_any and w == "hammer" and is_hero():
 				lv.shake(2.5, 0.12)
 			if not enchant.is_empty() and enchant["el"] == "fire":
 				VFX.particles(lv, origin + aim * r * 0.6, Color("ff8a3a"), 8, 60.0, 0.4, Vector2(0, -40), "soft", 0.3)
@@ -504,11 +632,11 @@ func basic_attack() -> void:
 			set_action_anim("attack" if w in ["bow", "gun"] else "cast", minf(0.3, attack_cd))
 			var tex: String = atk.get("proj", "bolt")
 			var dirs := [aim]
-			if float(Game.stats.get("split", 0.0)) > 0.0 and randf() * 100.0 < float(Game.stats["split"]):
+			if float(st.get("split", 0.0)) > 0.0 and randf() * 100.0 < float(st["split"]):
 				dirs.append(aim.rotated(0.18))
 				dirs.append(aim.rotated(-0.18))
 			for d in dirs:
-				Projectile.spawn(lv, global_position + d * 8.0, d, {"attacker": self, "team": "player", "speed": atk["speed"],
+				Projectile.spawn(lv, global_position + d * 8.0, d, {"attacker": self, "team": team, "foe": foe_team(), "speed": atk["speed"],
 					"range": atk["range"], "power": power, "dmg": dmg_type, "el": el, "opts": opts, "tex": tex,
 					"pierce": atk.get("pierce", 0), "homing": atk.get("homing", 0.0), "color": GameData.element_color(el) if el != "none" else (Color("c8e6ff") if dmg_type == "magic" else Color.WHITE),
 					"height": 12.0, "trail": dmg_type == "magic"})
@@ -529,16 +657,20 @@ func _swing(arc: float, dur: float) -> void:
 
 
 func try_cast(sid: String) -> bool:
-	var lvl := Game.skill_level(sid)
+	var lvl := skill_lv(sid)
 	if lvl <= 0:
 		return false
 	if gcd > 0.0 or skill_cds.has(sid):
 		return false
 	var s: Dictionary = GameData.SKILLS[sid]
 	var cost := GameData.skill_mp(sid, lvl)
+	var free := DebugMode.free_skills and is_hero()
+	if free:
+		cost = 0.0
 	if mp < cost:
-		Sfx.play("error")
-		level_node().float_text(global_position + Vector2(0, -34), "Not enough MP", Color("8fb8ff"), 0.8)
+		if is_hero():
+			Sfx.play("error")
+			level_node().float_text(global_position + Vector2(0, -34), "Not enough MP", Color("8fb8ff"), 0.8)
 		return false
 	var hp_cost := float(s.get("hp_cost", 0)) / 100.0 * max_hp
 	if hp_cost > 0.0 and hp <= hp_cost + 1.0:
@@ -546,14 +678,17 @@ func try_cast(sid: String) -> bool:
 	var target := mouse_pos()
 	if not SkillExec.cast(self, sid, lvl, target):
 		# targeted skills (Shadow Step, Lotus Storm...) refuse without a target and cost nothing
+		if not is_hero():
+			return false
 		Sfx.play("error")
 		if level_node():
 			level_node().float_text(global_position + Vector2(0, -34), "No target in range", Color("aab4c8"), 0.8)
 		return false
 	mp -= cost
 	hp -= hp_cost
-	var cd := GameData.skill_cd(sid, lvl) * (1.0 - float(Game.stats.get("cdr", 0.0)) / 100.0)
-	skill_cds[sid] = cd
+	var cd := GameData.skill_cd(sid, lvl) * (1.0 - float(st.get("cdr", 0.0)) / 100.0)
+	if not free:
+		skill_cds[sid] = cd
 	gcd = 0.25 / attack_speed()
 	attack_cd = maxf(attack_cd, 0.15)
 	return true
@@ -562,60 +697,73 @@ func try_cast(sid: String) -> bool:
 func skill_cd_ratio(sid: String) -> float:
 	if not skill_cds.has(sid):
 		return 0.0
-	var lvl := maxi(1, Game.skill_level(sid))
-	var total := GameData.skill_cd(sid, lvl) * (1.0 - float(Game.stats.get("cdr", 0.0)) / 100.0)
+	var lvl := maxi(1, skill_lv(sid))
+	var total := GameData.skill_cd(sid, lvl) * (1.0 - float(st.get("cdr", 0.0)) / 100.0)
 	return clampf(float(skill_cds[sid]) / maxf(0.01, total), 0.0, 1.0)
 
 
 func on_dealt_damage(target: Actor, amount: int, info: Dictionary) -> void:
-	var ls := float(Game.stats.get("lifesteal", 0.0))
+	var ls := float(st.get("lifesteal", 0.0))
 	if info.get("crit", false):
-		ls += float(Game.stats.get("crit_heal", 0.0))
+		ls += float(st.get("crit_heal", 0.0))
 	if ls > 0.0:
 		heal(amount * ls / 100.0, false)
 
 
 func on_kill(target: Actor) -> void:
-	var kh := float(Game.stats.get("kill_heal", 0.0))
+	var kh := float(st.get("kill_heal", 0.0))
 	if kh > 0.0:
 		heal(max_hp * kh / 100.0)
-	if float(Game.stats.get("spree", 0.0)) > 0.0:
+	if float(st.get("spree", 0.0)) > 0.0:
 		spree_stacks = mini(5, spree_stacks + 1)
 		spree_t = 4.0
-		Game.recalc()
+		recalc_stats()
 
 
 # ===================================================================== damage taken
 func take_damage(amount: int, info: Dictionary = {}) -> int:
 	if dead:
 		return 0
+	if DebugMode.god and is_hero() and not Duel.is_duelist(self):
+		return 0
 	if invuln_t > 0.0 and not info.get("dot", false):
 		return 0
 	var lv = level_node()
 	var dmg := float(amount)
 	if not info.get("dot", false):
-		if randf() * 100.0 < float(Game.stats.get("dodge", 0.0)):
+		if randf() * 100.0 < float(st.get("dodge", 0.0)):
 			if lv:
 				lv.float_text(global_position + Vector2(0, -30), "Dodge", Color("c8e6ff"), 0.9)
 			VFX.afterimage(self, Color(1, 1, 1, 0.5), 0.2)
 			return 0
-		if randf() * 100.0 < float(Game.stats.get("block", 0.0)):
+		if randf() * 100.0 < float(st.get("block", 0.0)):
 			dmg *= 0.3
 			if lv:
 				lv.float_text(global_position + Vector2(0, -30), "Block", Color("c0cbdc"), 0.9)
 				VFX.cross_flash(lv, global_position + aim * 8.0 + Vector2(0, -12), 8.0, Color(1, 1, 1), 0.2)
 			Sfx.play("block")
-		if hp < max_hp * 0.35 and float(Game.stats.get("low_hp_def", 0.0)) > 0.0:
-			dmg *= 1.0 / (1.0 + float(Game.stats["low_hp_def"]) / 100.0)
-	var ms := float(Game.stats.get("mana_shield", 0.0))
+		if hp < max_hp * 0.35 and float(st.get("low_hp_def", 0.0)) > 0.0:
+			dmg *= 1.0 / (1.0 + float(st["low_hp_def"]) / 100.0)
+	var ms := float(st.get("mana_shield", 0.0))
 	if ms > 0.0 and mp > 0.0:
 		var take := minf(mp, dmg * ms / 100.0)
 		mp -= take
 		dmg -= take
+	if Duel.is_duelist(self):
+		# skills are tuned against monster health pools: halve duel damage so bouts last a while
+		dmg *= Duel.DAMAGE_SCALE
+		# nobody dies in a duel: the first to drop to 1 HP loses (no Last Stand / Resurrection)
+		var through := maxf(0.0, dmg - shield)
+		if hp - through < 1.0:
+			var d0 := super.take_damage(int(minf(dmg, shield + maxf(0.0, hp - 1.0))), info)
+			hp = 1.0
+			Duel.ko(self)
+			return d0
+		return super.take_damage(int(dmg), info)
 	var lethal := hp - dmg <= 0.0
 	var now := Time.get_ticks_msec() / 1000.0
-	if lethal and float(Game.stats.get("last_stand", 0.0)) > 0.0 and now >= float(passive_ready["last_stand"]):
-		var lvl_ls := float(Game.stats["last_stand"])
+	if lethal and float(st.get("last_stand", 0.0)) > 0.0 and now >= float(passive_ready["last_stand"]):
+		var lvl_ls := float(st["last_stand"])
 		passive_ready["last_stand"] = now + maxf(60.0, 180.0 - 5.0 * lvl_ls)
 		dmg = maxf(0.0, hp - 1.0)
 		invuln_t = 2.0
@@ -628,16 +776,17 @@ func take_damage(amount: int, info: Dictionary = {}) -> int:
 	if dead:
 		return dealt
 	if dealt > 0 and not info.get("dot", false):
-		Sfx.play("hurt", 0.1, 0.8)
-		if lv:
-			lv.shake(2.0, 0.12)
-			lv.hurt_flash()
+		if is_hero():
+			Sfx.play("hurt", 0.1, 0.8)
+			if lv:
+				lv.shake(2.0, 0.12)
+				lv.hurt_flash()
 		teleport_t = -1.0
-		if randf() * 100.0 < float(Game.stats.get("martyr", 0.0)):
+		if randf() * 100.0 < float(st.get("martyr", 0.0)):
 			heal(max_hp * 0.05)
 			if lv:
 				VFX.particles(lv, global_position + Vector2(0, -12), Color("7be05a"), 10, 40.0, 0.6, Vector2(0, -30), "spark", 0.5)
-		if randf() * 100.0 < float(Game.stats.get("counter", 0.0)):
+		if randf() * 100.0 < float(st.get("counter", 0.0)):
 			_counter_attack()
 	return dealt
 
@@ -648,14 +797,14 @@ func _counter_attack() -> void:
 		return
 	VFX.ring(lv, global_position + Vector2(0, -6), 40.0, Color("ffd27a"), 0.3, 3.0, 6.0)
 	lv.float_text(global_position + Vector2(0, -36), "Counter!", Color("ffd27a"), 0.9)
-	for a in lv.actors_in_radius(global_position, 40.0, "enemy"):
+	for a in lv.actors_in_radius(global_position, 40.0, foe_team()):
 		Combat.hit(self, a, 150.0, "phys", "none", {"knock": 120.0})
 
 
 func die(killer = null) -> void:
 	var now := Time.get_ticks_msec() / 1000.0
-	if float(Game.stats.get("revive", 0.0)) > 0.0 and now >= float(passive_ready["revive"]):
-		passive_ready["revive"] = now + maxf(90.0, 300.0 - 8.0 * float(Game.stats["revive"]))
+	if float(st.get("revive", 0.0)) > 0.0 and now >= float(passive_ready["revive"]):
+		passive_ready["revive"] = now + maxf(90.0, 300.0 - 8.0 * float(st["revive"]))
 		hp = max_hp * 0.5
 		invuln_t = 3.0
 		clear_debuffs()
@@ -701,7 +850,7 @@ func consume(t: Dictionary, id: String) -> void:
 		if lv and mp > before:
 			lv.float_text(global_position + Vector2(4, -30), "+%d MP" % int(mp - before), Color("6fb8ff"), 0.9)
 	if t.has("satiety"):
-		Game.player["satiety"] = minf(100.0, float(Game.player["satiety"]) + float(t["satiety"]))
+		pd["satiety"] = minf(100.0, float(pd["satiety"]) + float(t["satiety"]))
 	if t.get("cure", false):
 		clear_debuffs()
 		add_buff("immune", 10.0, {}, Color("7be05a"), "Immune")
@@ -709,7 +858,7 @@ func consume(t: Dictionary, id: String) -> void:
 		var b: Dictionary = t["buff"]
 		var dur := float(b["dur"])
 		if kind == "food":
-			dur *= 1.0 + float(Game.stats.get("food_dur_pct", 0.0)) / 100.0
+			dur *= 1.0 + float(st.get("food_dur_pct", 0.0)) / 100.0
 		add_buff(b["id"], dur, b["mods"], Color("ffd27a"), t["name"])
 	if float(t.get("poison_chance", 0)) > 0.0 and randf() * 100.0 < float(t["poison_chance"]):
 		apply_status("poison", 5.0, max_hp * 0.02)

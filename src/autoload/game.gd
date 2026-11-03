@@ -38,6 +38,8 @@ var player_node: Node = null
 var _autosave_t := 0.0
 var _item_cd := 0.0
 var rng := RandomNumberGenerator.new()
+## Set while the hero runs a dungeon listed in the guild by an NPC (shares go to its owner).
+var guild_run: Dictionary = {}
 
 
 func _ready() -> void:
@@ -52,11 +54,16 @@ func _process(delta: float) -> void:
 		_item_cd -= delta
 	if not in_game or test_run:
 		return
+	if not get_tree().paused:
+		NpcWorld.tick(delta)
 	playtime += delta
 	_autosave_t += delta
 	if _autosave_t >= AUTOSAVE_INTERVAL:
-		_autosave_t = 0.0
-		save_game(true)
+		if Duel.active:
+			_autosave_t = AUTOSAVE_INTERVAL - 5.0  # never autosave mid-duel (the stakes are in escrow)
+		else:
+			_autosave_t = 0.0
+			save_game(true)
 
 
 func _notification(what: int) -> void:
@@ -85,7 +92,7 @@ func new_game(pname: String, cls: String, save_slot: int) -> void:
 		"stat_points": 0, "skill_points": 1, "skills": {}, "tomes": [],
 		"equip": {"weapon": {}, "armor": {}, "necklace": {}, "ring1": {}, "ring2": {}, "bracelet1": {}, "bracelet2": {}},
 		"inv": inv, "bag_size": BASE_BAG,
-		"hot_skills": ["", "", "", ""], "hot_items": ["pot_hp_s", "pot_mp_s", "food_bread", ""],
+		"hot_skills": ["", "", "", ""], "hot_items": ["pot_hp_s", "pot_mp_s", "food_bread", "food_apple"],
 		"hp": -1.0, "mp": -1.0, "satiety": 100.0, "pos": [], "last_field": [],
 		"guild_points": 0, "quests": [], "kills": {}, "dungeons_cleared": 0, "bosses_killed": 0,
 		"last_stand_ready": 0.0, "revive_ready": 0.0,
@@ -106,6 +113,8 @@ func new_game(pname: String, cls: String, save_slot: int) -> void:
 	recalc()
 	player["hp"] = stats["max_hp"]
 	player["mp"] = stats["max_mp"]
+	guild_run = {}
+	NpcWorld.ensure_world()
 
 
 # =================================================================== stats
@@ -483,6 +492,9 @@ func use_item(index: int) -> bool:
 		"consumable":
 			if _item_cd > 0.0:
 				return false
+			if Duel.active and t.get("kind", "") == "potion":
+				toast("No potions in a duel!", Color("ffb347"))
+				return false
 			if not is_instance_valid(player_node) or player_node.dead:
 				return false
 			player_node.consume(t, it["id"])
@@ -769,6 +781,8 @@ func _sync_live_state() -> void:
 func save_game(auto: bool = false) -> bool:
 	if player.is_empty() or test_run:
 		return false
+	if Duel.active:
+		Duel.cancel("the game was saved")  # quitting / leaving mid-duel returns the stakes
 	_sync_live_state()
 	var data := {"version": 1, "slot": slot, "date": Time.get_datetime_string_from_system(false, true), "playtime": playtime,
 		"next_uid": next_uid, "player": player, "world": world, "shops": shops, "designs": designs}
@@ -821,6 +835,8 @@ func load_game(s: int) -> bool:
 	if not world.has("visited"):
 		world["visited"] = {}
 	player["inv"].resize(int(player["bag_size"]))
+	guild_run = {}
+	NpcWorld.ensure_world()
 	recalc()
 	return true
 

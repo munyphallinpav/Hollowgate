@@ -298,6 +298,10 @@ func _salvage() -> void:
 	if sel_ref.get("where", "") != "inv":
 		return
 	var it: Dictionary = sel_ref["item"]
+	if it.get("locked", false):
+		Game.toast("That item is locked. Unlock it in your bag (right-click) to salvage it.", UI.BAD)
+		Sfx.play("error")
+		return
 	var res := Items.salvage_result(it)
 	Game.remove_at(int(sel_ref["index"]))
 	for k in res:

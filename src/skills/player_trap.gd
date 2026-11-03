@@ -9,6 +9,8 @@ var life := 20.0
 var status: Dictionary = {}
 var armed := 0.4
 var ast: Dictionary = {}
+var foe := "enemy"   # who it damages (the caster's foe team when it was placed)
+var side := "player" # who it heals
 var _blink := 0.0
 
 
@@ -16,6 +18,8 @@ func _ready() -> void:
 	add_to_group("player_traps")
 	if is_instance_valid(caster):
 		ast = caster.get_stats().duplicate()
+		foe = caster.foe_team()
+		side = caster.team
 	var s := Sprite2D.new()
 	s.texture = Art.obj("dg_spike1")
 	s.modulate = Color(0.6, 0.9, 1.0)
@@ -36,7 +40,7 @@ func _process(delta: float) -> void:
 	var lv = Game.level_node
 	if lv == null:
 		return
-	for a in lv.actors_in_radius(global_position, 12.0, "enemy"):
+	for a in lv.actors_in_radius(global_position, 12.0, foe):
 		trigger()
 		return
 
@@ -46,6 +50,6 @@ func trigger() -> void:
 	VFX.element_burst(lv, global_position, "water", radius)
 	for k in 6:
 		VFX.spike(lv, global_position + Vector2.from_angle(k * TAU / 6.0) * radius * 0.5, "ice_spike", 1.0, 0.8)
-	for a in lv.actors_in_radius(global_position, radius, "enemy"):
+	for a in lv.actors_in_radius(global_position, radius, foe):
 		Combat.hit(caster if is_instance_valid(caster) else null, a, power, "phys", "water", {"ast": ast, "status": status, "skill": true})
 	queue_free()

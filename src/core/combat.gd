@@ -65,6 +65,8 @@ static func hit(attacker: Actor, target: Actor, power_pct: float, dmg_type: Stri
 			dmg *= float(ast.get("crit_dmg", 150.0)) / 100.0
 	dmg *= randf_range(0.92, 1.08)
 	var final := maxi(1, int(round(dmg)))
+	if DebugMode.one_hit and attacker != null and attacker == Game.player_node and not Duel.is_duelist(target):
+		final = maxi(final, int(ceil(target.hp + target.shield)) + 1)
 	# execute
 	if opts.has("execute") and not target.is_boss() and target.hp - final <= target.max_hp * float(opts["execute"]) / 100.0:
 		final = maxi(final, int(ceil(target.hp)))

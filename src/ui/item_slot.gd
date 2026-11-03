@@ -21,6 +21,7 @@ var price_label: Label
 var _size := 44
 var dim := false
 var highlight := false
+var lock_mark: Control
 
 
 func _init(sz: int = 44) -> void:
@@ -42,6 +43,13 @@ func _init(sz: int = 44) -> void:
 	price_label.position = Vector2(-10, sz - 2)
 	price_label.size = Vector2(sz + 20, 14)
 	add_child(price_label)
+	lock_mark = Control.new()
+	lock_mark.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	lock_mark.position = Vector2(sz - 13, 2)
+	lock_mark.size = Vector2(11, 12)
+	lock_mark.visible = false
+	lock_mark.draw.connect(_draw_lock)
+	add_child(lock_mark)
 	mouse_entered.connect(_on_enter)
 	mouse_exited.connect(_on_exit)
 	_refresh_style()
@@ -62,7 +70,19 @@ func set_item(it, pr: int = -1) -> void:
 		qty_label.text = str(q) if q > 1 else ""
 		corner_label.text = "+%d" % int(item["enchant"]) if Items.is_gear(item) and int(item.get("enchant", 0)) > 0 else ""
 	price_label.text = "%dg" % price if price >= 0 and not item.is_empty() else ""
+	lock_mark.visible = item.get("locked", false)
+	lock_mark.queue_redraw()
 	_refresh_style()
+
+
+## A tiny padlock: shackle arc + body.
+func _draw_lock() -> void:
+	var c := Color("ffd27a")
+	lock_mark.draw_rect(Rect2(0, 4, 11, 8), Color(0, 0, 0, 0.85))
+	lock_mark.draw_arc(Vector2(5.5, 5), 3.6, PI, TAU, 10, Color(0, 0, 0, 0.85), 3.0)
+	lock_mark.draw_arc(Vector2(5.5, 5), 3.0, PI, TAU, 10, c, 1.6)
+	lock_mark.draw_rect(Rect2(1, 5, 9, 6), c)
+	lock_mark.draw_rect(Rect2(5, 7, 1, 2), Color(0.2, 0.15, 0.05))
 
 
 func _refresh_style() -> void:
