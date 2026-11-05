@@ -297,7 +297,66 @@ func run_all() -> void:
 		if int(it.get("uid", -1)) == int(locked["uid"]) and it.get("locked", false):
 			lock_kept = true
 	ok(lock_kept, "locks are saved with the game")
+	await _buyback_tests()
 	_end()
+
+
+func _bag_has(uid: int) -> bool:
+	for it in _bag():
+		if int(it.get("uid", -1)) == uid:
+			return true
+	return false
+
+
+# ---- buying back recently sold items
+func _buyback_tests() -> void:
+	var M = Game.main
+	Game.player["buyback"] = []
+	Game.add_gold(100000)
+	M.open_service("gear")
+	await _wait(0.4)
+	var w: ShopWindow = M.window
+	var gear := _give(Items.gen_gear(GameData.CLASSES["warrior"]["weapon"], 20, 1))
+	var uid := int(gear["uid"])
+	var price := Items.sell_price(gear)
+	var idx := -1
+	for i in Game.player["inv"].size():
+		var it = Game.player["inv"][i]
+		if it is Dictionary and int(it.get("uid", -1)) == uid:
+			idx = i
+	var g0 := int(Game.player["gold"])
+	w._do_sell(idx, 1)
+	ok(not _bag_has(uid) and int(Game.player["gold"]) == g0 + price, "sold the gear (+%d)" % price)
+	var bb := Game.buyback_list()
+	ok(bb.size() == 1 and int(bb[0]["item"]["uid"]) == uid and int(bb[0]["each"]) == price, "the sale is listed for buyback")
+	w.buyback_mode = true
+	w.refresh()
+	await _wait(0.2)
+	ok(w.stock_grid.get_child_count() == 1 and w.tab_btn.text == "Back to shop", "the Buy back tab lists it")
+	await shot("buyback")
+	w._buy_back(0)
+	await _wait(0.2)
+	ok(_bag_has(uid) and int(Game.player["gold"]) == g0 and Game.buyback_list().is_empty(), "bought back for what it sold for")
+	# stacks: selling the same potion twice makes one entry; partial buyback when gold is short
+	Game.give_item(Items.stack("pot_hp_s", 6))
+	var each := Items.sell_price(Items.stack("pot_hp_s", 1))
+	for k in 2:
+		for i in Game.player["inv"].size():
+			var it = Game.player["inv"][i]
+			if it is Dictionary and it.get("id", "") == "pot_hp_s":
+				w._do_sell(i, 3)
+				break
+	bb = Game.buyback_list()
+	ok(bb.size() == 1 and int(bb[0]["item"]["qty"]) == 6, "repeated sales of one stack merge (%s)" % str(bb.map(func(e): return e["item"].get("qty", 1))))
+	Game.player["gold"] = each * 2
+	var got := Game.buy_back(0)
+	ok(got == 2 and int(Game.buyback_list()[0]["item"]["qty"]) == 4 and int(Game.player["gold"]) == 0, "short on gold: buys back what you can afford")
+	# the list keeps only the latest sales
+	Game.player["buyback"] = []
+	for k in Game.BUYBACK_MAX + 3:
+		Game.record_sale(Items.gen_gear(GameData.CLASSES["warrior"]["weapon"], 5, 0), 10)
+	ok(Game.buyback_list().size() == Game.BUYBACK_MAX, "only the last %d sales are kept" % Game.BUYBACK_MAX)
+	M.close_all()
 
 
 func _end() -> void:

@@ -6,6 +6,10 @@ extends RefCounted
 ## (within MATCH_TOLERANCE) — or both empty for a friendly duel. The winner takes the whole pot and earns
 ## XP (more for beating a higher-level opponent; half for friendly duels). Nobody dies: the first to drop
 ## to 1 HP loses. Potions are not allowed, the fight stays inside the ring and lasts at most TIME_LIMIT.
+##
+## Live duels are fought in the Duelling Grounds, a pocket dimension (src/world/duel_arena.gd) built far
+## outside the world map: both duellists (and their summons) are teleported there when the duel starts and
+## back to where they stood when it ends, however it ends (win, loss, forfeit, draw or called off).
 
 const MATCH_TOLERANCE := 0.15
 const RING := 130.0
@@ -13,6 +17,9 @@ const TIME_LIMIT := 90.0
 const COUNTDOWN := 3.0
 const MAX_STAKE_ITEMS := 4
 const DAMAGE_SCALE := 0.5  # damage between duellists (skills are tuned against monster HP)
+const ARENA_POS := Vector2(-6000, -6000)  # the pocket dimension: far outside the world map (0..8192 px)
+const ARENA_WALL := RING + 8.0  # invisible barrier at the platform's edge
+const ArenaScript := preload("res://src/world/duel_arena.gd")
 
 static var active := false
 static var phase := ""  # "countdown", "fight", "over"
@@ -24,7 +31,10 @@ static var pot_b: Dictionary = {}
 static var center := Vector2.ZERO
 static var t := 0.0
 static var out_t := 0.0
-static var ring_fx: Node2D = null
+static var out_tb := 0.0
+static var arena: Node2D = null
+static var return_a := Vector2.INF  # where the duellists stood before they were taken to the arena
+static var return_b := Vector2.INF
 static var last_result := ""
 
 
@@ -147,14 +157,12 @@ static func start(hero: Player, foe: Player, stake_hero: Dictionary, stake_foe: 
 	phase = "countdown"
 	t = 0.0
 	out_t = 0.0
+	out_tb = 0.0
 	a = hero
 	b = foe
 	npc = foe.npc
 	npc["state_before_duel"] = npc["state"]
 	npc["state"] = "duel"
-	center = _open_center(lv, (hero.global_position + foe.global_position) * 0.5)
-	hero.global_position = center + Vector2(-50, 0)
-	foe.global_position = center + Vector2(50, 0)
 	hero.invuln_t = COUNTDOWN
 	foe.invuln_t = COUNTDOWN
 	hero.lock(COUNTDOWN)
@@ -165,26 +173,52 @@ static func start(hero: Player, foe: Player, stake_hero: Dictionary, stake_foe: 
 	foe.foe = hero
 	hero.hp = maxf(hero.hp, hero.max_hp * 0.5)
 	foe.hp = maxf(foe.hp, foe.max_hp * 0.5)
-	ring_fx = VFX.static_ring(lv, center, RING, Color(1.0, 0.82, 0.35, 0.9), 2.0)
+	# off to the Duelling Grounds
+	return_a = hero.global_position
+	return_b = foe.global_position
+	center = ARENA_POS
+	arena = ArenaScript.create(lv, center, RING, ARENA_WALL)
+	for m in lv.get_tree().get_nodes_in_group("monsters"):
+		if is_instance_valid(m) and (m.target == hero or m.target == foe):
+			m.target = null
+	_warp(lv, hero, center + Vector2(-50, 0))
+	_warp(lv, foe, center + Vector2(50, 0))
+	hero.aim = Vector2.RIGHT
+	foe.aim = Vector2.LEFT
 	lv.float_text(center + Vector2(0, -60), "DUEL!", Color("fee761"), 2.0)
-	Game.toast("Duel against %s! Pot: %s. No potions; stay inside the ring." % [npc["name"], pot_text()], Color("fee761"))
+	Game.toast("You and %s are pulled into the Duelling Grounds! Pot: %s. No potions; first to 1 HP loses." % [npc["name"], pot_text()], Color("fee761"))
 	Sfx.play("roar", 0.1, 0.8)
 	return true
 
 
-## A spot near `p` where both duellists' starting marks (and a bit of the ring) are open ground.
-static func _open_center(lv, p: Vector2) -> Vector2:
-	for ring in 12:
-		for k in (1 if ring == 0 else 10):
-			var c := p + Vector2.from_angle(k * TAU / 10.0) * ring * 24.0
-			var ok := true
-			for off in [Vector2.ZERO, Vector2(-50, 0), Vector2(50, 0), Vector2(-90, 0), Vector2(90, 0), Vector2(0, -45), Vector2(0, 45)]:
-				if not lv.is_walkable(c + off):
-					ok = false
-					break
-			if ok:
-				return c
-	return p
+## Moves a duellist (and the summons it has out) to `to` with a portal flash on both ends.
+static func _warp(lv, p: Player, to: Vector2) -> void:
+	if lv == null or p == null or not is_instance_valid(p):
+		return
+	var from := p.global_position
+	VFX.pillar(lv, from, 6.0, 80.0, Color("fee761"), 0.5)
+	VFX.particles(lv, from + Vector2(0, -10), Color("fee761"), 24, 70.0, 0.6, Vector2(0, -60), "spark", 0.6)
+	p.global_position = to
+	p.velocity = Vector2.ZERO
+	p.knock = Vector2.ZERO
+	p.teleport_t = -1.0
+	if p is Adventurer:
+		(p as Adventurer)._goal = Vector2.INF
+	for al in lv.get_tree().get_nodes_in_group("allies"):
+		if is_instance_valid(al) and not al.dead and al.owner_player == p:
+			al.global_position = to + (al.global_position - from).limit_length(30.0)
+			al.set_team(p.team, p.foe_side)
+	if p == lv.player:
+		lv.camera.global_position = to
+		lv.camera.reset_smoothing()
+	VFX.pillar(lv, to, 6.0, 80.0, Color("fee761"), 0.6)
+	VFX.particles(lv, to + Vector2(0, -10), Color("fee761"), 24, 70.0, 0.6, Vector2(0, -60), "spark", 0.6)
+	Sfx.play("portal")
+
+
+## Is the duel being fought in the Duelling Grounds right now?
+static func in_arena() -> bool:
+	return active and arena != null and is_instance_valid(arena)
 
 
 static func pot_text() -> String:
@@ -220,16 +254,24 @@ static func update(delta: float) -> void:
 	if t >= TIME_LIMIT:
 		finish(null, "time")
 		return
-	# leaving the ring for 3 seconds forfeits
-	if a.global_position.distance_to(center) > RING * 1.25:
-		out_t += delta
-		if out_t > 3.0:
-			finish(b, "forfeit")
-			return
-		if int((out_t - delta) * 2.0) != int(out_t * 2.0):
-			lv.float_text(a.global_position + Vector2(0, -36), "Back into the ring!", Color("ffb347"), 0.9)
-	else:
-		out_t = 0.0
+	# leaving the ring for 3 seconds forfeits (the arena's barrier normally prevents it; this catches
+	# blinks and teleports past the edge)
+	out_t = _out_of_ring(lv, a, out_t, delta)
+	if out_t > 3.0:
+		finish(b, "forfeit")
+		return
+	out_tb = _out_of_ring(lv, b, out_tb, delta)
+	if out_tb > 3.0:
+		finish(a, "forfeit")
+
+
+static func _out_of_ring(lv, p: Player, timer: float, delta: float) -> float:
+	if p.global_position.distance_to(center) <= RING * 1.25:
+		return 0.0
+	var nt := timer + delta
+	if int(timer * 2.0) != int(nt * 2.0):
+		lv.float_text(p.global_position + Vector2(0, -36), "Back into the ring!", Color("ffb347"), 0.9)
+	return nt
 
 
 ## A duellist dropped to 1 HP.
@@ -263,7 +305,7 @@ static func finish(winner: Player, reason: String) -> void:
 				Game.give_item(it)
 			Game.add_xp(xp)
 			last_result = "won"
-			Game.toast("You defeated %s%s! +%d XP%s" % [npc["name"], " (forfeit)" if reason == "forfeit" else "", int(xp),
+			Game.toast("You defeated %s%s! +%d XP%s" % [npc["name"], " (they left the ring)" if reason == "forfeit" else "", int(xp),
 				(", won %s" % pot_text()) if staked else ""], Color("7be05a"))
 			if lv:
 				lv.float_text(winner.global_position + Vector2(0, -50), "VICTORY!", Color("fee761"), 2.0)
@@ -309,7 +351,25 @@ static func _refund() -> void:
 			NpcWorld.add_item(npc, it)
 
 
+## Sends both duellists (and their summons) back from the Duelling Grounds to where they stood.
+static func _leave_arena() -> void:
+	var lv = Game.level_node
+	if lv != null and is_instance_valid(lv):
+		for pair in [[a, return_a], [b, return_b]]:
+			var p = pair[0]
+			var to: Vector2 = pair[1]
+			if p == null or not is_instance_valid(p) or to == Vector2.INF or p.dead:
+				continue
+			_warp(lv, p, lv.snap_walkable(to))
+	if arena != null and is_instance_valid(arena):
+		arena.queue_free()
+	arena = null
+	return_a = Vector2.INF
+	return_b = Vector2.INF
+
+
 static func _restore_sides() -> void:
+	_leave_arena()
 	for p in [a, b]:
 		if p != null and is_instance_valid(p):
 			p.set_team("player", "")
@@ -332,9 +392,9 @@ static func _restore_sides() -> void:
 
 
 static func _clear() -> void:
-	if ring_fx != null and is_instance_valid(ring_fx):
-		ring_fx.queue_free()
-	ring_fx = null
+	if arena != null and is_instance_valid(arena):
+		arena.queue_free()
+	arena = null
 	a = null
 	b = null
 	npc = {}

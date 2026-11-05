@@ -620,7 +620,7 @@ static func _tick_npc(n: Dictionary, dt: float) -> void:
 		"follow":
 			_tick_follower(n, dt, phys)
 		"duel":
-			if not Duel.active or Duel.npc != n:
+			if not Duel.active or not is_same(Duel.npc, n):
 				n["state"] = n.get("state_before_duel", "town")
 				if n["state"] == "duel":
 					_enter_town(n)

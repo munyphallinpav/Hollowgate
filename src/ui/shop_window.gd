@@ -7,6 +7,11 @@ var stock_grid: GridContainer
 var inv_grid: GridContainer
 var gold_lbl: Label
 var info_lbl: RichTextLabel
+var buyback_mode := false  # the left grid shows recently sold items instead of the stock
+var stock_title: Label
+var stock_hint: Label
+var tab_btn: Button
+var restock_btn: Button
 
 const TITLES := {"gear": "Gear Shop — Bram's Arms & Armor", "potion": "Potion Shop — Myra's Remedies", "food": "Food Shop — Tobbin's Kitchen",
 	"magic": "Magic Shop — Orren's Spellbooks", "artifact": "Artifact Shop — Lys' Curiosities"}
@@ -38,17 +43,25 @@ func _init(r: String) -> void:
 	h.add_child(left)
 	var lt := UI.hbox(8)
 	left.add_child(lt)
-	lt.add_child(UI.label("For sale", 18, Color("ffe9a8")))
+	stock_title = UI.label("For sale", 18, Color("ffe9a8"))
+	lt.add_child(stock_title)
+	tab_btn = UI.button("Buy back", func():
+		buyback_mode = not buyback_mode
+		refresh())
+	tab_btn.tooltip_text = "Recently sold items (any shop) can be bought back for what you sold them for."
+	lt.add_child(tab_btn)
 	if role == "gear":
-		lt.add_child(UI.button("Restock (%dg)" % _restock_cost(), func():
+		restock_btn = UI.button("Restock (%dg)" % _restock_cost(), func():
 			var c := _restock_cost()
 			if int(Game.player["gold"]) < c:
 				Game.toast("Not enough gold.", UI.BAD)
 				return
 			Game.add_gold(-c)
 			Game.refresh_shops(true)
-			refresh()))
-	left.add_child(UI.label("Click to buy. Shift+click to buy several.", 12, UI.DIM))
+			refresh())
+		lt.add_child(restock_btn)
+	stock_hint = UI.label("", 12, UI.DIM)
+	left.add_child(stock_hint)
 	stock_grid = GridContainer.new()
 	stock_grid.columns = 7
 	stock_grid.add_theme_constant_override("h_separation", 8)
@@ -121,6 +134,35 @@ func refresh() -> void:
 	gold_lbl.text = str(int(Game.player["gold"]))
 	for c in stock_grid.get_children():
 		c.queue_free()
+	var bb := Game.buyback_list()
+	tab_btn.text = "Back to shop" if buyback_mode else ("Buy back (%d)" % bb.size())
+	stock_title.text = "Buy back" if buyback_mode else "For sale"
+	if restock_btn:
+		restock_btn.visible = not buyback_mode
+	if buyback_mode:
+		_fill_buyback(bb)
+	else:
+		_fill_stock()
+	for c in inv_grid.get_children():
+		c.queue_free()
+	var inv_a: Array = Game.player["inv"]
+	for i in inv_a.size():
+		var it2 = inv_a[i]
+		if not (it2 is Dictionary) or it2.is_empty():
+			continue
+		var s2 := ItemSlot.new(46)
+		s2.source = "inv"
+		s2.index = i
+		s2.draggable = false
+		s2.set_item(it2, Items.sell_price(it2))
+		s2.slot_clicked.connect(func(sl, btn, _shift, _dbl):
+			if btn == MOUSE_BUTTON_LEFT or btn == MOUSE_BUTTON_RIGHT:
+				_sell(sl.index))
+		inv_grid.add_child(s2)
+
+
+func _fill_stock() -> void:
+	stock_hint.text = "Click to buy. Shift+click to buy several."
 	var stock := _stock()
 	for i in stock.size():
 		var it: Dictionary = stock[i]
@@ -138,22 +180,42 @@ func refresh() -> void:
 		stock_grid.add_child(s)
 	if stock.is_empty():
 		stock_grid.add_child(UI.label("Sold out! Come back tomorrow.", 14, UI.DIM))
-	for c in inv_grid.get_children():
-		c.queue_free()
-	var inv_a: Array = Game.player["inv"]
-	for i in inv_a.size():
-		var it2 = inv_a[i]
-		if not (it2 is Dictionary) or it2.is_empty():
-			continue
-		var s2 := ItemSlot.new(46)
-		s2.source = "inv"
-		s2.index = i
-		s2.draggable = false
-		s2.set_item(it2, Items.sell_price(it2))
-		s2.slot_clicked.connect(func(sl, btn, _shift, _dbl):
+
+
+## Recently sold items, newest first, at the price they were sold for.
+func _fill_buyback(bb: Array) -> void:
+	stock_hint.text = "Your last %d sales (any shop), newest first. Click to buy back for what you sold it for." % Game.BUYBACK_MAX
+	for i in bb.size():
+		var e: Dictionary = bb[i]
+		var it: Dictionary = e["item"]
+		var s := ItemSlot.new(52)
+		s.source = "shop"
+		s.index = i
+		s.draggable = false
+		s.set_item(it, int(e["each"]) * int(it.get("qty", 1)))
+		s.dim = int(Game.player["gold"]) < int(e["each"])
+		s.slot_clicked.connect(func(sl, btn, _shift, _dbl):
 			if btn == MOUSE_BUTTON_LEFT or btn == MOUSE_BUTTON_RIGHT:
-				_sell(sl.index))
-		inv_grid.add_child(s2)
+				_buy_back(sl.index))
+		stock_grid.add_child(s)
+	if bb.is_empty():
+		stock_grid.add_child(UI.label("Nothing sold yet.", 14, UI.DIM))
+
+
+func _buy_back(i: int) -> void:
+	var bb := Game.buyback_list()
+	if i < 0 or i >= bb.size():
+		return
+	var it: Dictionary = bb[i]["item"]
+	var total := int(bb[i]["each"]) * int(it.get("qty", 1))
+	if Items.is_gear(it) and int(it.get("rarity", 0)) >= 3:
+		Dialogs.confirm(Game.main.menu_layer, "Buy back", "Buy back [color=#%s]%s[/color] for %d gold?" % [
+			Items.color_of(it).to_html(false), Items.name_of(it), total], func():
+				Game.buy_back(i)
+				refresh(), "Buy back")
+		return
+	Game.buy_back(i)
+	refresh()
 
 
 func _buy(i: int, many: bool) -> void:
@@ -248,6 +310,7 @@ func _do_sell(index: int, n: int) -> void:
 	var part := Game.remove_at(index, n)
 	if part.is_empty():
 		return
+	Game.record_sale(part, price)
 	Game.add_gold(price * n)
 	Sfx.play("coin")
 
@@ -281,6 +344,7 @@ func _sell_junk() -> void:
 		var it = inv_a[i]
 		if it is Dictionary and Items.is_gear(it) and int(it.get("rarity", 0)) == 0 and int(it.get("enchant", 0)) == 0 and not it.get("locked", false):
 			total += Items.sell_price(it)
+			Game.record_sale(it, Items.sell_price(it))
 			inv_a[i] = null
 	if total > 0:
 		Game.add_gold(total)

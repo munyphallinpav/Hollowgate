@@ -384,6 +384,17 @@ func _think_follow(hpf: float) -> void:
 			return  # wait by the fallen leader
 		mode = "routine"
 		return
+	if Duel.is_duelist(leader):
+		# the leader is away in the Duelling Grounds: hold this spot (don't teleport after it) and
+		# defend yourself until it comes back
+		_goal = Vector2.INF
+		if foe != null and not _foe_valid(foe):
+			foe = null
+		if foe == null:
+			foe = _group_foe(global_position, 120.0)
+		if foe != null:
+			_fight(hpf)
+		return
 	var dl := global_position.distance_to(leader.global_position)
 	if dl > 420.0 and _tp_cd <= 0.0 and not in_air_skill:
 		_tp_cd = 2.0
@@ -393,13 +404,6 @@ func _think_follow(hpf: float) -> void:
 		global_position = spot
 		VFX.pillar(lv, spot, 5.0, 60.0, Color("8fd3ff"), 0.4)
 		foe = null
-		return
-	if Duel.is_duelist(leader):
-		# the leader is duelling: stand outside the ring and watch
-		foe = null
-		var out := Duel.center + (global_position - Duel.center).normalized() * (Duel.RING + 26.0)
-		_goal = out if global_position.distance_to(Duel.center) < Duel.RING + 14.0 else Vector2.INF
-		aim_point = leader.global_position
 		return
 	if foe != null and (not _foe_valid(foe) or foe.global_position.distance_to(leader.global_position) > 260.0):
 		foe = null

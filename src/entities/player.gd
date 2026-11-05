@@ -887,6 +887,9 @@ func start_town_teleport() -> void:
 	var lv = level_node()
 	if lv == null:
 		return
+	if Duel.is_duelist(self):
+		Game.toast("You can't leave in the middle of a duel.", Color("ffb347"))
+		return
 	if lv.is_town():
 		Game.toast("You are already in town.", Color("aab4c8"))
 		return

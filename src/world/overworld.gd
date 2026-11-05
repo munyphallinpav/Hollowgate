@@ -66,6 +66,14 @@ func tile_of(p: Vector2) -> Vector2i:
 	return Vector2i(int(floor(p.x / T)), int(floor(p.y / T)))
 
 
+## Where the world is anchored: the hero — or, while the hero is away in the Duelling Grounds, the spot
+## they were taken from, so that the chunks, monsters and adventurers around it stay as they were.
+func focus_pos() -> Vector2:
+	if Duel.in_arena() and Duel.a == player and Duel.return_a != Vector2.INF:
+		return Duel.return_a
+	return player.global_position
+
+
 func is_town() -> bool:
 	if player == null or not is_instance_valid(player):
 		return false
@@ -147,7 +155,7 @@ const ADV_MAX_LIVE := 12
 func _update_adventurers() -> void:
 	if player == null or not is_instance_valid(player) or not Game.world.has("npcs"):
 		return
-	var pp := player.global_position
+	var pp := focus_pos()
 	var cands := []
 	for n in NpcWorld.npcs():
 		if Social.in_party(n):
@@ -155,6 +163,10 @@ func _update_adventurers() -> void:
 		var eligible: bool = n["state"] in ["town", "travel", "hunt", "return", "follow"]
 		var a = NpcWorld.actor_of(n)
 		if a:
+			# the hero's duel opponent stays a live actor until the duel is over (despawning it
+			# would free the actor and call the duel off as "interrupted" right after it starts)
+			if Duel.active and a == Duel.b:
+				continue
 			if not eligible or a.global_position.distance_to(pp) > ADV_DESPAWN_DIST:
 				_despawn_adventurer(n)
 			continue
@@ -203,7 +215,8 @@ func _snap_walkable(p: Vector2) -> Vector2:
 func _update_chunks(force: bool) -> void:
 	if player == null:
 		return
-	var pc := Vector2i(int(floor(player.global_position.x / (WorldGen.CHUNK * T))), int(floor(player.global_position.y / (WorldGen.CHUNK * T))))
+	var fp := focus_pos()
+	var pc := Vector2i(int(floor(fp.x / (WorldGen.CHUNK * T))), int(floor(fp.y / (WorldGen.CHUNK * T))))
 	for dy in range(-2, 3):
 		for dx in range(-2, 3):
 			var c := pc + Vector2i(dx, dy)
@@ -444,6 +457,9 @@ func _update_daylight(instant: bool = false) -> void:
 func _update_ambient() -> void:
 	if ambient == null or player == null:
 		return
+	if Duel.in_arena():
+		ambient.set_kind("spores")  # motes drifting through the pocket dimension
+		return
 	var t := tile_of(player.global_position)
 	if gen.in_town(t.x, t.y, 2):
 		ambient.set_kind("fireflies" if Game.is_night() else "")
@@ -477,7 +493,7 @@ func player_light_energy() -> float:
 func _spawn_tick() -> void:
 	if player == null or player.dead:
 		return
-	var pp := player.global_position
+	var pp := focus_pos()
 	var count := 0
 	for m in get_tree().get_nodes_in_group("monsters"):
 		if not is_instance_valid(m) or m.dead:
@@ -489,7 +505,7 @@ func _spawn_tick() -> void:
 		if m.summoner == null:
 			count += 1
 	var cap := 12 + (4 if Game.is_night() else 0)
-	if count >= cap:
+	if count >= cap or Duel.in_arena():
 		return
 	for attempt in 6:
 		var ang := randf() * TAU
@@ -688,6 +704,9 @@ func save_position() -> Array:
 
 
 func teleport_to_town() -> void:
+	if Duel.is_duelist(player):
+		Game.toast("You can't leave in the middle of a duel.", Color("ffb347"))
+		return
 	if not is_town():
 		Game.player["last_field"] = [player.global_position.x, player.global_position.y]
 	_teleport_player(town_spawn())
@@ -695,6 +714,8 @@ func teleport_to_town() -> void:
 
 
 func use_waypoint() -> void:
+	if Duel.is_duelist(player):
+		return
 	var lf: Array = Game.player.get("last_field", [])
 	if lf.size() != 2:
 		Game.toast("The waypoint has no destination yet. Teleport to town from the wild first.", Color("aab4c8"))

@@ -217,10 +217,14 @@ static func sell(f: Dictionary, exclude: Dictionary = {}) -> Array:
 			continue  # the bag changed meanwhile
 		var each := Items.sell_price(it)
 		var n := mini(int(ln[2]), int(it.get("qty", 1)))
+		var sold: Dictionary = it
 		if Items.is_gear(it) or n >= int(it.get("qty", 1)):
 			inv[idx] = null
 		else:
+			sold = it.duplicate(true)
+			sold["qty"] = n
 			it["qty"] = int(it["qty"]) - n
+		Game.record_sale(sold, each)
 		gold += each * n
 		count += n
 	if count > 0:

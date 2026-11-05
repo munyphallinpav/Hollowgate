@@ -429,6 +429,8 @@ func _interact_name(t: Node) -> String:
 
 
 func _location_text(lvn) -> String:
+	if Duel.in_arena():
+		return "The Duelling Grounds  •  pocket dimension"
 	if lvn is DungeonLevel:
 		return "%s  •  Rank %d" % [lvn.design.get("name", "Dungeon"), int(lvn.design.get("rank", 1))]
 	if lvn is Overworld and lvn.player:

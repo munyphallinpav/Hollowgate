@@ -228,6 +228,75 @@ func add_item(it: Dictionary, notify_pickup: bool = false) -> bool:
 	return done
 
 
+# ------------------------------------------------------------------ buyback
+## Items sold to any shop can be bought back for exactly what the shop paid. The list keeps the last
+## BUYBACK_MAX sales (newest first) and is saved with the character: Game.player["buyback"] =
+## [{"item": Dictionary, "each": gold per unit}].
+const BUYBACK_MAX := 12
+
+
+func buyback_list() -> Array:
+	if not player.has("buyback") or not (player["buyback"] is Array):
+		player["buyback"] = []
+	return player["buyback"]
+
+
+## Remembers a sale (call after the item left the bag). `it` is the sold item or stack part.
+func record_sale(it: Dictionary, each: int) -> void:
+	if it.is_empty() or int(it.get("qty", 1)) <= 0:
+		return
+	var bb := buyback_list()
+	var sold: Dictionary = it.duplicate(true)
+	sold.erase("locked")
+	# selling the same stackable item again just adds to the newest entry
+	if not bb.is_empty() and not Items.is_gear(sold) and int(bb[0]["each"]) == each and Items.can_stack(bb[0]["item"], sold):
+		bb[0]["item"]["qty"] = int(bb[0]["item"].get("qty", 1)) + int(sold.get("qty", 1))
+		return
+	bb.insert(0, {"item": sold, "each": each})
+	while bb.size() > BUYBACK_MAX:
+		bb.pop_back()
+
+
+## Buys back buyback entry `i` (as much of it as fits in the bag). Returns how many units came back.
+func buy_back(i: int) -> int:
+	var bb := buyback_list()
+	if i < 0 or i >= bb.size():
+		return 0
+	var e: Dictionary = bb[i]
+	var it: Dictionary = e["item"]
+	var each := int(e["each"])
+	var want := int(it.get("qty", 1))
+	var n := mini(want, int(player["gold"]) / maxi(1, each))
+	if n <= 0:
+		toast("Not enough gold to buy that back (%d gold)." % (each * want), Color("ff7a7a"))
+		Sfx.play("error")
+		return 0
+	if Items.is_gear(it) and free_slots() <= 0:
+		toast("Your bag is full.", Color("ff7a7a"))
+		Sfx.play("error")
+		return 0
+	var part: Dictionary = it.duplicate(true)
+	if not Items.is_gear(part):
+		part["qty"] = n
+		if part.has("uid"):
+			part["uid"] = Items.uid()  # a partial buyback must not share the stored stack's uid
+	add_item(part)  # leaves in part["qty"] whatever did not fit
+	var got := n - (int(part.get("qty", 0)) if not Items.is_gear(part) else 0)
+	if got <= 0:
+		toast("Your bag is full.", Color("ff7a7a"))
+		Sfx.play("error")
+		return 0
+	add_gold(-each * got)
+	if Items.is_gear(it) or got >= want:
+		bb.remove_at(i)
+	else:
+		it["qty"] = want - got
+	inventory_changed.emit()
+	toast("Bought back %s%s for %d gold." % [Items.name_of(it), "" if got <= 1 else " x%d" % got, each * got], Color("7be05a"))
+	Sfx.play("coin")
+	return got
+
+
 ## Adds an item; whatever does not fit in the bag is dropped at the player's feet instead of being lost.
 func give_item(it: Dictionary) -> void:
 	if add_item(it):

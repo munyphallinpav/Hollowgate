@@ -80,6 +80,10 @@ scripts in `tools/art/`, and all sounds and music are synthesized at runtime, so
   items, equipped gear, tomes, scrolls and dungeon crystals are never sold by filter. The window shows exactly
   what will be sold and for how much, what your rules held back, and lets you click any item to keep it this
   time; big or valuable batches ask for confirmation. The filter is remembered with your character.
+- **Buy back** (tab in every shop): changed your mind? Your last 12 sales — from any shop, sold by hand, by filter
+  or as common gear — can be bought back for exactly what you got for them (same item: enchant, affixes and all).
+  Repeated sales of one stackable item merge into one entry; if you're short on gold you buy back what you can
+  afford. The list is saved with your character.
 
 ### World
 - **Hollowgate** town: walls with 4 gates guarded by very strong guards, Adventurer Guild (daily quest board,
@@ -143,9 +147,12 @@ scripts in `tools/art/`, and all sounds and music are synthesized at runtime, so
   duel can start; the adventurer makes a counter-offer from its own purse and bag, or bet nothing for a friendly bout.
 - The adventurer decides whether the bet is worth it from how it rates its chances (shown), its bravery and its bond with you.
 - **Winner takes all** and earns **XP** (a share of a level — more for beating a higher level, half for a friendly bout).
-- Rules: a ring appears, 3-second countdown, **no potions**, nobody dies — the first to drop to 1 HP loses; leaving the
-  ring for 3 seconds forfeits; after 90 seconds it is a draw and stakes are returned. Monsters ignore duellists, and
-  party members step out of the ring to watch.
+- **The Duelling Grounds**: when the duel starts, both duellists (and any summons they have out) are pulled into a
+  pocket dimension — a floating stone arena in a starry void, walled by an invisible barrier — and sent back to where
+  they stood when it ends, however it ends. The world around the spot you left keeps going (party members hold that
+  spot and defend themselves until you return); town teleports and waypoints don't work mid-duel.
+- Rules: 3-second countdown, **no potions**, nobody dies — the first to drop to 1 HP loses; ending up outside the
+  ring for 3 seconds (e.g. blinking past the barrier) forfeits; after 90 seconds it is a draw and stakes are returned.
 - Confident adventurers in town **challenge you** now and then (at most once a day each): they walk up with a **!** over
   their head; talk to them to answer — match their stake or decline. Adventurers also duel each other for gold in town.
 
@@ -281,7 +288,7 @@ godot --path . -- --autotest --npctest        # NPC adventurers (2 sim hours, gr
                                               #   and the Dungeon Hall (slots, shares, runs, payouts, save/load)
 godot --path . -- --autotest --debugtest      # debug mode: overlay, cheat panel, every cheat
 godot --path . -- --autotest --tagtest        # kill tagging, adventurers' manners, live fights vs elites and a boss
-godot --path . -- --autotest --selltest       # selling by filter (rarity, level, value, type, gold target), locks
+godot --path . -- --autotest --selltest       # selling by filter (rarity, level, value, type, gold target), locks, buyback
 godot --path . -- --autotest --socialtest     # bonds, gifts, parties (follow, teleport, shared XP, dungeons), duels,
                                               #   adventurer parties, spectated and party test runs
 godot --path . --resolution 2560x1080 -- --autotest --restest [--pixelperfect] [--modes]
