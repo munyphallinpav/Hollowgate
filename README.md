@@ -21,6 +21,19 @@ scripts in `tools/art/`, and all sounds and music are synthesized at runtime, so
    The first import takes a few seconds while Godot imports the sprites.
 3. Press **F5** (Run Project).
 
+### Exporting to HTML (play in a browser)
+1. In Godot: **Editor → Manage Export Templates → Download and Install** (once per Godot version).
+2. **Project → Export…** → select the **Web** preset → **Export Project** (or **Export PCK/ZIP**). The default path is
+   `../../GoDot Html/Hollowgate.html`; to upload to itch.io, export as **`index.html`** into an empty folder and zip it.
+3. A web build must be served over **http(s)**, not opened as a file. To try it locally, the Web preset is runnable:
+   click the **Remote Debug / browser button** in the editor's top-right (Run in Browser), or run
+   `python -m http.server` in the export folder and open `http://localhost:8000/Hollowgate.html`.
+
+The Web preset is single-threaded (no special server headers needed), uses the Compatibility renderer and leaves out
+the dev test scripts. In the browser, saves and settings live in the browser's storage (per site), the game also saves
+whenever the tab loses focus (never mid-duel), F11 / Alt+Enter toggle browser fullscreen, the window size / monitor
+settings are disabled, and there is no Quit button.
+
 ## Controls (all rebindable in Menu → Settings)
 
 | Action | Default |
@@ -41,6 +54,31 @@ scripts in `tools/art/`, and all sounds and music are synthesized at runtime, so
 | Watching a test run | 1 / 2 / 3 follow a runner, Space free camera, WASD move it, Esc → End Test Run |
 
 ## Features
+
+### Tutorial & progression
+- **Tutorial**: a new character is guided through its first session, one step at a time (shown on the right of the
+  screen, each step pays a little gold): walk around → learn a skill and put it on the hotbar → accept a guild quest →
+  leave town through a gate → defeat 3 monsters → check your bag → teleport back to town → sell something.
+  Finishing it pays 100 gold and 5 potions. Skip or restart it on the **Quests** page (J); rewards are paid only once.
+- **Feature unlocks**: the game opens up as you level. Locked services refuse politely (buttons show the level they
+  need), and a **NEW FEATURE UNLOCKED** card announces each one the moment you reach its level. The Quests page lists
+  every unlock and how much XP the next one is away.
+
+  | Level | Unlocks |
+  |---|---|
+  | 1 | Combat, bag, character, skills, quests, map, the guild's Quest Board, Gear / Potion / Food shops, teleport to town, waypoint |
+  | 3 | **Blacksmith** — craft and salvage |
+  | 5 | **Hidden Dungeons** (entering portals), **Bonds & Gifts** |
+  | 6 | **Magic Shop** — spellbooks (Tome skills) |
+  | 8 | **Parties**, Blacksmith **Enchanting** |
+  | 10 | **Duels** (challenging and being challenged) |
+  | 12 | **Artifact Shop** |
+  | 14 | Blacksmith **Affix Rerolling** |
+  | 15 | Guild **Dungeon Hall** |
+  | 18 | **Dungeon Architect** (Dungeon Editor) |
+
+  The table lives in `src/core/progression.gd` (`FEATURES`) and is easy to retune. Saves from before this system skip
+  the tutorial. The debug panel has an "Unlock all features" switch.
 
 ### Character building
 - 5 classes — **Warrior** (Sword & Shield, STR), **Ranger** (Bow, DEX), **Assassin** (Dagger, LUK),
@@ -123,7 +161,11 @@ scripts in `tools/art/`, and all sounds and music are synthesized at runtime, so
 - Only gifts that **make it stronger** count: gear it can wear (item level up to its level + 5) that beats what it has
   in that slot — it equips it on the spot — potions, food, or materials one of its guild quests needs. Useless gifts are
   politely refused and you keep them. Gold works too (40 + 12 × its level per bond point; only whole points are taken).
-- At most **+25 bond per adventurer per in-game day**.
+- At most **+25 bond per adventurer per in-game day** from gifts.
+- **Fighting together** builds bond too, with its own limit (**+15 per day**, on top of gifts): every monster your
+  party kills (+1 per 10 ordinary kills, +1 per elite, +2 per mini boss, +4 per boss; trivially weak monsters count
+  less) and **+5 for every dungeon cleared together** (+1 per 25 ranks). Only members fighting beside you gain it —
+  not ones who are away — and a pink "+1 bond" pops up over them. Test runs don't count.
 - Bond raises the chance that a stronger adventurer joins your party, how long members stay
   (15 min + 10 min per bond level; **sworn allies stay for good**), and the party's XP bonus.
 
@@ -228,7 +270,7 @@ elite / mini boss / boss variants, and bosses enrage at half health.
   shimmering pixels at in-between scales like ×1.5.
 
 ### Saving
-3 save slots. **Auto-saves every minute** (never mid-duel), when returning to the title screen, and when the game window
+10 save slots. **Auto-saves every minute** (never mid-duel), when returning to the title screen, and when the game window
 is closed (a duel in progress is called off and the stakes returned).
 Saves are in Godot's user data folder (`user://saves/`).
 
@@ -262,7 +304,7 @@ src/autoload/          GameData (formulas/data access), Art (sprite loading), Se
 src/data/              Skills, items and world/monster databases (plain dictionaries — easy to tweak)
 src/core/              Stat calculation, items, combat math, quests, dungeon generation,
                        NpcWorld (NPC adventurers' simulation + guild Dungeon Hall),
-                       Social (bonds, parties), Duel (staked duels)
+                       Social (bonds, parties), Duel (staked duels), Progression (tutorial + feature unlocks)
 src/entities/          Actor base, Player, Adventurer (NPC AI on top of Player), Monster AI, Ally summons, Guard, NPC, projectiles, loot,
                        harvestables, chests, traps, spawners, portals
 src/skills/            Skill executor (29 skill behaviours), zones, player traps
@@ -288,6 +330,7 @@ godot --path . -- --autotest --npctest        # NPC adventurers (2 sim hours, gr
                                               #   and the Dungeon Hall (slots, shares, runs, payouts, save/load)
 godot --path . -- --autotest --debugtest      # debug mode: overlay, cheat panel, every cheat
 godot --path . -- --autotest --tagtest        # kill tagging, adventurers' manners, live fights vs elites and a boss
+godot --path . -- --autotest --progtest       # tutorial steps and rewards, feature unlocks by level, unlock cards, saves
 godot --path . -- --autotest --selltest       # selling by filter (rarity, level, value, type, gold target), locks, buyback
 godot --path . -- --autotest --socialtest     # bonds, gifts, parties (follow, teleport, shared XP, dungeons), duels,
                                               #   adventurer parties, spectated and party test runs

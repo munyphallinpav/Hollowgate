@@ -736,6 +736,7 @@ func _on_boss_died(_m) -> void:
 		_over_t = 4.0
 	if not test_run:
 		Game.on_dungeon_cleared(int(design.get("rank", 1)))
+		Social.on_dungeon_cleared(int(design.get("rank", 1)))
 		for d in Game.world["dungeons"]:
 			if d.get("id", -1) == dungeon.get("id", -2):
 				d["cleared"] = true

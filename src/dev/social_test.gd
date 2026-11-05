@@ -271,6 +271,30 @@ func _party_tests() -> void:
 	m.queue_free()
 	ok(int(Game.player["xp"]) > hx or int(Game.player["level"]) > hlv, "you get XP when a party member lands the kill")
 	ok(float(third["xp"]) > x2 or int(third["level"]) > lv2, "and so does the member")
+	# fighting together builds bond (its own daily limit, separate from gifts)
+	third["bond"] = 40
+	third.erase("team_bond_today")
+	third["team_bond_acc"] = 0.0
+	Social.on_party_kill("elite", 1.0)
+	ok(Social.bond(third) == 41, "an elite killed together: bond +1 (%d)" % Social.bond(third))
+	for i in 10:
+		Social.on_party_kill("normal", 1.0)
+	ok(Social.bond(third) == 42, "ten ordinary kills together: bond +1 more (%d)" % Social.bond(third))
+	var gift_left := Social.bond_left_today(third)
+	for i in 20:
+		Social.on_party_kill("boss", 1.0)
+	ok(Social.bond(third) == 40 + Social.TEAM_BOND_PER_DAY and Social.team_bond_left_today(third) == 0, "teamwork bond is capped at %d a day (%d)" % [Social.TEAM_BOND_PER_DAY, Social.bond(third)])
+	ok(Social.bond_left_today(third) == gift_left, "and doesn't use up the gift limit")
+	var away := _make_npc(hl)
+	away["bond"] = 10
+	Social.join_party(away)  # a member whose actor isn't here (away) gains nothing
+	if NpcWorld.actor_of(away) != null:
+		lvn.despawn_adventurer(away)
+	Social.on_party_kill("boss", 1.0)
+	ok(Social.bond(away) == 10, "members who aren't with you don't gain bond")
+	Social.leave_party(away, "")
+	third.erase("team_bond_today")
+	third["bond"] = 100
 	await _wait(0.3)
 	await shot("party_hud")
 	# into a dungeon together
@@ -283,6 +307,11 @@ func _party_tests() -> void:
 	ok(b1 != null and b2 != null and dl.is_ancestor_of(b1) and dl.is_ancestor_of(b2), "the party comes along into the same dungeon")
 	if b1:
 		ok(b1.global_position.distance_to(dl.player.global_position) < 120.0, "right beside you")
+	peer["bond"] = 50
+	peer.erase("team_bond_today")
+	var gains := Social.on_dungeon_cleared(6)
+	ok(Social.bond(peer) == 50 + Social.TEAM_DUNGEON_BOND and gains.size() >= 1, "clearing a dungeon together: bond +%d (%d)" % [Social.TEAM_DUNGEON_BOND, Social.bond(peer)])
+	peer["bond"] = 100
 	await _wait(1.0)
 	await shot("party_dungeon")
 	M.leave_dungeon("exit", false)

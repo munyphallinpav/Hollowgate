@@ -17,6 +17,11 @@ func _init() -> void:
 	tabbar = TabBar.new()
 	for t in ["Craft", "Enchant", "Reroll", "Salvage"]:
 		tabbar.add_tab(t)
+	# enchanting and rerolling open up with character level (Progression)
+	for pr in [[1, "enchant", "Enchant"], [2, "reroll", "Reroll"]]:
+		if not Progression.is_unlocked(pr[1]):
+			tabbar.set_tab_title(pr[0], "%s (Lv %d)" % [pr[2], Progression.unlock_level(pr[1])])
+			tabbar.set_tab_disabled(pr[0], true)
 	tabbar.focus_mode = Control.FOCUS_NONE
 	tabbar.clip_tabs = false
 	tabbar.tab_changed.connect(func(i):

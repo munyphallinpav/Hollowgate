@@ -74,8 +74,8 @@ func start_new_game(pname: String, cls: String, slot: int) -> void:
 	Game.new_game(pname, cls, slot)
 	_start_world()
 	Game.save_game(true)
-	Game.toast("Welcome to Hollowgate, %s! Visit the Adventurer Guild for quests, then head out through any gate." % pname, Color("ffe9a8"))
-	Game.toast("Tip: you have 1 skill point — press %s to open your skills." % Settings.action_text("open_skills"), Color("c8c0e0"))
+	Game.toast("Welcome to Hollowgate, %s! Follow the tutorial on the right of the screen to get started." % pname, Color("ffe9a8"))
+	Game.toast("New features unlock as you level up — see Quests (%s) → Progression." % Settings.action_text("open_quests"), Color("c8c0e0"))
 
 
 func load_slot(s: int) -> void:
@@ -247,6 +247,8 @@ func open_menu(tab: String) -> void:
 func open_service(role: String, _npc = null) -> void:
 	if not Game.in_game:
 		return
+	if Progression.SERVICE_FEATURE.has(role) and not Progression.check(Progression.SERVICE_FEATURE[role]):
+		return
 	match role:
 		"guild":
 			_open(GuildWindow.new())
@@ -274,6 +276,8 @@ func open_npc_profile(id: int) -> void:
 
 func open_duel(n: Dictionary, a: Adventurer, challenge: Dictionary = {}) -> void:
 	if not Game.in_game or a == null or not is_instance_valid(a):
+		return
+	if not Progression.check("duels"):
 		return
 	_open(DuelWindow.new(n, a, challenge))
 

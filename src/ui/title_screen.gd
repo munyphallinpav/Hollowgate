@@ -119,7 +119,10 @@ func show_main() -> void:
 		var b := UI.button("Continue  (%s Lv %d)" % [inf.get("name", "?"), int(inf.get("level", 1))], func(): Game.main.load_slot(latest), 280)
 		b.add_theme_font_size_override("font_size", 18)
 		box.add_child(b)
-	for e in [["New Game", show_new], ["Load Game", show_load], ["Settings", show_settings], ["Quit", func(): get_tree().quit()]]:
+	var entries := [["New Game", _new_game_pressed], ["Load Game", show_load], ["Settings", show_settings]]
+	if not OS.has_feature("web"):  # a browser tab can't quit itself
+		entries.append(["Quit", func(): get_tree().quit()])
+	for e in entries:
 		var b2 := UI.button(e[0], e[1], 280)
 		b2.add_theme_font_size_override("font_size", 18)
 		box.add_child(b2)
@@ -128,6 +131,19 @@ func show_main() -> void:
 	hint.position = Vector2(-560, -40)
 	hint.size = Vector2(1120, 20)
 	content.add_child(hint)
+
+
+func _new_game_pressed() -> void:
+	sel_slot = _first_free_slot()
+	show_new()
+
+
+## The first empty save slot (or slot 1 when all are used).
+func _first_free_slot() -> int:
+	for s in range(1, Game.SAVE_SLOTS + 1):
+		if Game.slot_info(s).is_empty():
+			return s
+	return 1
 
 
 func _latest_slot() -> int:
@@ -199,17 +215,21 @@ func show_new() -> void:
 	name_edit.max_length = 16
 	name_edit.custom_minimum_size.x = 200
 	h.add_child(name_edit)
-	h.add_child(UI.spacer(20))
-	h.add_child(UI.label("Save slot:", 16))
+	var hs := UI.hbox(6)
+	v.add_child(hs)
+	hs.add_child(UI.label("Save slot:", 16))
 	for s in range(1, Game.SAVE_SLOTS + 1):
 		var inf := Game.slot_info(s)
 		var ss: int = s
-		var b := UI.button("%d%s" % [s, "" if inf.is_empty() else " (used)"], func():
+		var b := UI.button("%d%s" % [s, "" if inf.is_empty() else "*"], func():
 			sel_slot = ss
-			show_new())
+			show_new(), 44)
 		b.toggle_mode = true
 		b.button_pressed = s == sel_slot
-		h.add_child(b)
+		if not inf.is_empty():
+			b.tooltip_text = "Slot %d is used: %s, Lv %d (starting here overwrites it)" % [s, inf.get("name", "?"), int(inf.get("level", 1))]
+		hs.add_child(b)
+	hs.add_child(UI.label("  * used", 13, UI.DIM))
 	var h2 := UI.hbox(10)
 	h2.alignment = BoxContainer.ALIGNMENT_END
 	v.add_child(h2)
@@ -231,12 +251,14 @@ func show_load() -> void:
 	_title(content)
 	var panel := PanelContainer.new()
 	panel.set_anchors_preset(Control.PRESET_CENTER)
-	panel.position = Vector2(-420, -110)
-	panel.custom_minimum_size = Vector2(840, 300)
+	panel.position = Vector2(-440, -150)
+	panel.custom_minimum_size = Vector2(880, 0)
 	content.add_child(panel)
 	var v := UI.vbox(10)
 	panel.add_child(v)
 	v.add_child(UI.label("Load Game", 22, Color("ffe9a8")))
+	var rows := UI.vbox(8)
+	v.add_child(UI.scroll(rows, Vector2(860, 320)))
 	for s in range(1, Game.SAVE_SLOTS + 1):
 		var inf := Game.slot_info(s)
 		var row := UI.hbox(10)
@@ -253,7 +275,7 @@ func show_load() -> void:
 				Dialogs.confirm(content, "Delete save", "Permanently delete slot %d?" % ss, func():
 					Game.delete_slot(ss)
 					show_load(), "Delete")))
-		v.add_child(row)
+		rows.add_child(row)
 	v.add_child(UI.button("Back", show_main, 120))
 
 

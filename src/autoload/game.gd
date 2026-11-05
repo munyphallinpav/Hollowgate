@@ -15,7 +15,7 @@ signal saved(auto: bool)
 
 const ID := preload("res://src/data/data_items.gd")
 const SAVE_DIR := "user://saves/"
-const SAVE_SLOTS := 3
+const SAVE_SLOTS := 10
 const DAY_LEN := 1200.0
 const AUTOSAVE_INTERVAL := 60.0
 const BASE_BAG := 30
@@ -36,6 +36,7 @@ var main: Node = null
 var level_node: Node = null
 var player_node: Node = null
 var _autosave_t := 0.0
+var _web_save_t := -100.0
 var _item_cd := 0.0
 var rng := RandomNumberGenerator.new()
 ## Set while the hero runs a dungeon listed in the guild by an NPC (shares go to its owner).
@@ -71,6 +72,13 @@ func _notification(what: int) -> void:
 		if in_game and not test_run:
 			save_game(true)
 		get_tree().quit()
+	elif what == NOTIFICATION_APPLICATION_FOCUS_OUT and OS.has_feature("web"):
+		# in a browser, closing the tab gives no warning: save whenever the page loses focus
+		# (switching tabs, clicking away) — but never mid-duel, which saving would call off
+		var now := Time.get_ticks_msec() / 1000.0
+		if in_game and not test_run and not Duel.active and now - _web_save_t > 10.0:
+			_web_save_t = now
+			save_game(true)
 
 
 func toast(text: String, color: Color = Color.WHITE) -> void:
@@ -115,6 +123,7 @@ func new_game(pname: String, cls: String, save_slot: int) -> void:
 	player["mp"] = stats["max_mp"]
 	guild_run = {}
 	NpcWorld.ensure_world()
+	Progression.init_new_game()
 
 
 # =================================================================== stats
@@ -159,6 +168,7 @@ func add_xp(amount: float) -> void:
 		leveled_up.emit(int(player["level"]))
 		toast("Level Up! You are now level %d" % int(player["level"]), Color("fee761"))
 		Sfx.play("levelup")
+		Progression.check_unlocks()
 	xp_changed.emit()
 
 
@@ -245,6 +255,7 @@ func buyback_list() -> Array:
 func record_sale(it: Dictionary, each: int) -> void:
 	if it.is_empty() or int(it.get("qty", 1)) <= 0:
 		return
+	player["items_sold"] = int(player.get("items_sold", 0)) + int(it.get("qty", 1))
 	var bb := buyback_list()
 	var sold: Dictionary = it.duplicate(true)
 	sold.erase("locked")
@@ -906,6 +917,7 @@ func load_game(s: int) -> bool:
 	player["inv"].resize(int(player["bag_size"]))
 	guild_run = {}
 	NpcWorld.ensure_world()
+	Progression.init_loaded_game()
 	recalc()
 	return true
 

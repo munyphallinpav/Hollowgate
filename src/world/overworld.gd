@@ -115,7 +115,7 @@ var _challenge_t := 30.0
 ## Now and then a confident adventurer in town challenges the hero to a duel (at most once a day each).
 ## It walks up with a "!" over its head; talk to it to answer.
 func _npc_challenge() -> void:
-	if Duel.active or Game.test_run or player == null or not is_instance_valid(player) or not is_town():
+	if Duel.active or Game.test_run or player == null or not is_instance_valid(player) or not is_town() or not Progression.is_unlocked("duels"):
 		return
 	var now := float(Game.world.get("total", 0.0))
 	if now < float(Game.player.get("duel_ask_t", 0.0)):
@@ -751,6 +751,8 @@ func on_player_died() -> void:
 
 
 func enter_dungeon(d: Dictionary) -> void:
+	if not Progression.check("dungeons"):
+		return
 	if Game.main:
 		Game.player["pos"] = [d["tile"][0] * T + 8, d["tile"][1] * T + 34]
 		Game.main.enter_dungeon(d, false)

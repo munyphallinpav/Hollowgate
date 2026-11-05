@@ -499,6 +499,7 @@ func on_monster_died(m: Monster, killer) -> void:
 		xp_mult = minf(1.6, 1.0 - lv_diff * 0.04)
 	var my_xp := Social.share_xp(m.xp_value * xp_mult)
 	Game.add_xp(my_xp)
+	Social.on_party_kill(m.tier, xp_mult)  # fighting side by side builds bond
 	if int(Game.player["level"]) < GameData.MAX_LEVEL:
 		var party_txt := " (party)" if Social.party_size() > 1 else ""
 		float_text(m.global_position + Vector2(0, -m.body_height - 14), "+%d XP%s" % [int(my_xp), party_txt], Color("8fe8ff"), 0.8)

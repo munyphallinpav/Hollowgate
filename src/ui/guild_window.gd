@@ -20,6 +20,11 @@ func _init(start_tab: int = 0) -> void:
 	tabs.add_tab("Quest Board")
 	tabs.add_tab("Dungeon Hall")
 	tabs.add_tab("Adventurers")
+	if not Progression.is_unlocked("dungeon_hall"):
+		tabs.set_tab_title(1, "Dungeon Hall (Lv %d)" % Progression.unlock_level("dungeon_hall"))
+		tabs.set_tab_disabled(1, true)
+		if tab == 1:
+			tab = 0
 	tabs.focus_mode = Control.FOCUS_NONE
 	tabs.clip_tabs = false
 	tabs.current_tab = tab

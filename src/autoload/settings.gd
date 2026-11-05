@@ -192,7 +192,13 @@ func embedded_in_editor() -> bool:
 
 ## Whether this session may change the window (not headless, not embedded in the editor).
 func can_change_window() -> bool:
-	return _display_ok() and not embedded_in_editor()
+	return _display_ok() and not embedded_in_editor() and not is_web()
+
+
+## Running in a web browser (HTML5 export): the page owns the canvas, so window size, monitor and
+## exclusive fullscreen don't apply — only browser fullscreen (F11 / Alt+Enter) does.
+func is_web() -> bool:
+	return OS.has_feature("web")
 
 
 var _deco := Vector2i(16, 39)  # window frame + title bar, measured while windowed (a typical guess until then)
@@ -425,6 +431,11 @@ func set_window_mode(m: String) -> void:
 
 
 func toggle_fullscreen() -> void:
+	if is_web():
+		# browsers only allow fullscreen from a key press or click — which is exactly when this runs
+		var w := get_window()
+		w.mode = Window.MODE_WINDOWED if w.mode in [Window.MODE_FULLSCREEN, Window.MODE_EXCLUSIVE_FULLSCREEN] else Window.MODE_FULLSCREEN
+		return
 	if not can_change_window():
 		if embedded_in_editor() and Game:
 			Game.toast("Running inside the Godot editor: fullscreen and window size are controlled by the editor. Run the exported game (or turn off \"Embed Game\" in the editor's Game tab) to use them.", Color("ffb347"))

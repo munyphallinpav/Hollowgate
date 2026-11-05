@@ -41,6 +41,16 @@ var status_panel: PanelContainer
 var party_box: VBoxContainer
 var _party_rows: Array = []  # [actor-or-record, hp bar, label]
 var banner: RichTextLabel
+var tut_panel: PanelContainer
+var tut_title: Label
+var tut_text: RichTextLabel
+var _tut_t := 0.0
+var _tut_key := ""
+var unlock_panel: PanelContainer
+var unlock_title: Label
+var unlock_text: RichTextLabel
+var _unlock_t := 0.0
+var _unlock_queue: Array = []  # [title, text] waiting for the card
 const MM_TILES := 72
 
 
@@ -61,6 +71,7 @@ func _ready() -> void:
 	_build_boss()
 	_build_prompts()
 	_build_party()
+	_build_tutorial()
 	Game.notify.connect(toast)
 	Game.saved.connect(_on_saved)
 	Game.quests_changed.connect(func(): _q_dirty = true)
@@ -199,6 +210,89 @@ func _build_quests() -> void:
 	quest_box.custom_minimum_size = Vector2(250, 0)
 	quest_box.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	root.add_child(quest_box)
+
+
+## The tutorial tracker (right side, above the quest list) and the "feature unlocked" card.
+func _build_tutorial() -> void:
+	tut_panel = PanelContainer.new()
+	tut_panel.add_theme_stylebox_override("panel", UI.sbox(Color(0.07, 0.06, 0.12, 0.85), Color("7be0ff").darkened(0.35), 1, 4, 8))
+	tut_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	tut_panel.custom_minimum_size = Vector2(250, 0)
+	tut_panel.visible = false
+	root.add_child(tut_panel)
+	var v := UI.vbox(3)
+	v.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	tut_panel.add_child(v)
+	tut_title = UI.outlined(UI.label("", 14, Color("7be0ff")))
+	v.add_child(tut_title)
+	tut_text = UI.rich("", 13)
+	tut_text.custom_minimum_size = Vector2(234, 0)
+	tut_text.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	v.add_child(tut_text)
+	unlock_panel = PanelContainer.new()
+	unlock_panel.add_theme_stylebox_override("panel", UI.sbox(Color(0.09, 0.07, 0.04, 0.92), UI.GOLD, 2, 6, 14))
+	unlock_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	unlock_panel.custom_minimum_size = Vector2(460, 0)
+	unlock_panel.visible = false
+	root.add_child(unlock_panel)
+	var u := UI.vbox(4)
+	u.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	unlock_panel.add_child(u)
+	var head := UI.outlined(UI.label("NEW FEATURE UNLOCKED", 12, Color("c8c0e0"), HORIZONTAL_ALIGNMENT_CENTER))
+	u.add_child(head)
+	unlock_title = UI.outlined(UI.label("", 22, Color("fee761"), HORIZONTAL_ALIGNMENT_CENTER))
+	u.add_child(unlock_title)
+	unlock_text = UI.rich("", 14)
+	unlock_text.custom_minimum_size = Vector2(432, 0)
+	unlock_text.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	u.add_child(unlock_text)
+
+
+## Shows the big unlock card for a few seconds (several unlocks at once queue up).
+func show_unlock(title: String, text: String) -> void:
+	_unlock_queue.append([title, text])
+	if _unlock_t <= 0.0:
+		_next_unlock_card()
+
+
+func _next_unlock_card() -> void:
+	if _unlock_queue.is_empty():
+		unlock_panel.visible = false
+		return
+	var e: Array = _unlock_queue.pop_front()
+	unlock_title.text = e[0]
+	unlock_text.text = "[center]%s[/center]" % e[1]
+	unlock_panel.visible = true
+	unlock_panel.modulate.a = 1.0
+	_unlock_t = 6.0
+	Sfx.play("levelup")
+
+
+func _update_tutorial(delta: float) -> void:
+	_tut_t -= delta
+	if _tut_t <= 0.0:
+		_tut_t = 0.25
+		if not Game.in_game:
+			tut_panel.visible = false
+			return
+		Progression.tick()
+		var s := Progression.current_step()
+		tut_panel.visible = not s.is_empty()
+		if not s.is_empty():
+			var prog := Progression.step_progress(s)
+			var key := "%s|%s" % [s["id"], prog]
+			if key != _tut_key:
+				_tut_key = key
+				tut_title.text = "Tutorial %d/%d: %s" % [int(Progression.state()["tut_step"]) + 1, Progression.STEPS.size(), s["title"]]
+				tut_text.text = "%s%s
+[color=#6f6a8c]Skip it on the Quests page (%s).[/color]" % [Progression.step_text(s),
+					("  [color=#fee761](%s)[/color]" % prog) if prog != "" else "", Settings.action_text("open_quests")]
+				tut_panel.reset_size()
+	if _unlock_t > 0.0:
+		_unlock_t -= delta
+		unlock_panel.modulate.a = clampf(_unlock_t / 0.6, 0.0, 1.0)
+		if _unlock_t <= 0.0:
+			_next_unlock_card()
 
 
 func _build_toasts() -> void:
@@ -342,9 +436,15 @@ func _layout() -> void:
 	if mm_panel:
 		mm_panel.visible = Settings.show_minimap
 		mm_panel.position = Vector2(vp.x - mm_panel.size.x - 10, 10)
-		quest_box.position = Vector2(vp.x - 262, (mm_panel.position.y + mm_panel.size.y + 10) if mm_panel.visible else 10.0)
+		var qy := (mm_panel.position.y + mm_panel.size.y + 10) if mm_panel.visible else 10.0
+		if tut_panel and tut_panel.visible:
+			tut_panel.position = Vector2(vp.x - 262, qy)
+			qy += tut_panel.size.y + 8
+		quest_box.position = Vector2(vp.x - 262, qy)
 	toast_box.position = Vector2(12, vp.y - toast_box.size.y - (hotbar_panel.size.y + 24 if hotbar_panel and hotbar_panel.position.x < 480 else 12))
 	boss_panel.position = Vector2(round((vp.x - boss_panel.size.x) * 0.5), 12)
+	if unlock_panel:
+		unlock_panel.position = Vector2(round((vp.x - unlock_panel.size.x) * 0.5), round(vp.y * 0.2))
 	prompt_lbl.position = Vector2(round((vp.x - prompt_lbl.size.x) * 0.5), (hotbar_panel.position.y if hotbar_panel else vp.y) - 36)
 	tp_bar.position = Vector2(round((vp.x - tp_bar.size.x) * 0.5), vp.y * 0.5 + 60)
 
@@ -402,6 +502,7 @@ func _process(delta: float) -> void:
 			boss_bar.value = b.hp
 	_update_party()
 	_update_banner()
+	_update_tutorial(delta)
 	_mm_t -= delta
 	if _mm_t <= 0.0:
 		_mm_t = 0.35

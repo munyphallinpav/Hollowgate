@@ -205,6 +205,17 @@ func _dev_script(path: String) -> Node:
 
 func _run() -> void:
 	var M = Game.main
+	# the older suites exercise every feature on fresh characters: no level gates, no tutorial
+	# (the progression suite turns both back on)
+	DebugMode.unlock_all = true
+	Progression.tutorial_off = true
+	if "--progtest" in OS.get_cmdline_user_args():
+		var pt = _dev_script("res://src/dev/progression_test.gd")
+		if pt == null:
+			return
+		add_child(pt)
+		await pt.run_all()
+		return
 	if "--balance" in OS.get_cmdline_user_args():
 		var bp = _dev_script("res://src/dev/balance_probe.gd")
 		if bp == null:

@@ -149,6 +149,8 @@ func _build_social() -> void:
 	var left_today := Social.bond_left_today(n)
 	bv.add_child(UI.rich("[color=#9c97b8]Today: +%d more bond possible (max %d/day). Gifts that count: gear they can wear that beats theirs, potions, food, materials their quests need — or gold (%d gold = 1 bond).[/color]" % [
 		left_today, Social.BOND_PER_DAY, Social.gold_per_bond(n)], 12))
+	bv.add_child(UI.rich("[color=#9c97b8]Fighting together in your party: +%d more today (max %d/day) — kills (elites and bosses count most) and dungeons cleared together.[/color]" % [
+		Social.team_bond_left_today(n), Social.TEAM_BOND_PER_DAY], 12))
 	# party + duel info
 	var pv := UI.vbox(3)
 	pv.custom_minimum_size.x = 360
@@ -217,6 +219,24 @@ func _build_social() -> void:
 			hint = "Duels are fought out in the world (not in dungeons or test runs)."
 	if not Social.in_party(n) and float(Social.invite_chance(n)[0]) <= 0.0:
 		inv_btn.disabled = true
+	# features that open up with character level (Progression)
+	var locked: Array = []
+	if not Progression.is_unlocked("bonds"):
+		gi.disabled = true
+		gg.disabled = true
+		locked.append("bonds")
+	if not Progression.is_unlocked("party") and not Social.in_party(n):
+		inv_btn.disabled = true
+		locked.append("party")
+	if not Progression.is_unlocked("duels"):
+		du.disabled = true
+		locked.append("duels")
+	if not locked.is_empty():
+		var parts: PackedStringArray = []
+		for id in locked:
+			parts.append("%s at Lv %d" % [Progression.feature(id)["name"], Progression.unlock_level(id)])
+		hint = ("%s
+" % hint if hint != "" else "") + "Unlocks: " + ", ".join(parts) + "."
 	if hint != "":
 		av.add_child(UI.label(hint, 12, UI.DIM))
 

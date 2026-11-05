@@ -25,6 +25,7 @@ func _init() -> void:
 	_check(c1, "No hunger", "no_hunger")
 	_check(c1, "Noclip (walk through walls)", "noclip")
 	_check(c1, "Fast movement (x2.5)", "fast_move")
+	_check(c1, "Unlock all features (ignore level gates)", "unlock_all")
 	c1.add_child(UI.label("Game speed", 14, UI.DIM))
 	var sp := UI.hbox(4)
 	c1.add_child(sp)

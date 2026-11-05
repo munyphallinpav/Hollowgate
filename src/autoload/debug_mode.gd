@@ -19,6 +19,7 @@ var no_hunger := false    # satiety stays full
 var noclip := false       # walk through walls, water and cliffs
 var fast_move := false    # hero moves 2.5x faster
 var game_speed := 1.0     # Engine.time_scale outside of hitstop
+var unlock_all := false   # every progression-locked feature is available (Progression.is_unlocked)
 
 var overlay_layer: CanvasLayer
 var overlay: Label
@@ -55,7 +56,7 @@ func _ready() -> void:
 
 
 func any_cheat() -> bool:
-	return god or one_hit or free_skills or no_hunger or noclip or fast_move or game_speed != 1.0
+	return god or one_hit or free_skills or no_hunger or noclip or fast_move or unlock_all or game_speed != 1.0
 
 
 # ------------------------------------------------------------------ input
@@ -152,7 +153,7 @@ func _overlay_text() -> String:
 	L.append("Monsters %d   adventurers here %d / %d   world dungeons %d" % [mons, NpcWorld.actors.size(),
 		NpcWorld.npcs().size(), Game.world.get("dungeons", []).size()])
 	var on: PackedStringArray = []
-	for f in ["god", "one_hit", "free_skills", "no_hunger", "noclip", "fast_move"]:
+	for f in ["god", "one_hit", "free_skills", "no_hunger", "noclip", "fast_move", "unlock_all"]:
 		if get(f):
 			on.append(f)
 	if game_speed != 1.0:

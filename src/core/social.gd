@@ -15,6 +15,10 @@ const BOND_NAMES := ["Stranger", "Acquaintance", "Friend", "Good friend", "Close
 const PARTY_MAX := 3  # including the leader
 const PARTY_SHARE_BONUS := 0.15  # total party XP grows 15% per extra member
 const INVITE_COOLDOWN := 60.0  # game seconds before asking the same adventurer again
+# Fighting side by side builds bond too, with its own daily limit (it never eats into the gift limit).
+const TEAM_BOND_PER_DAY := 15
+const TEAM_KILL_BOND := {"normal": 0.1, "elite": 1.0, "mini": 2.0, "boss": 4.0}  # per kill, per member
+const TEAM_DUNGEON_BOND := 5  # per dungeon cleared together (+1 per 25 ranks)
 
 
 # =================================================================== bond
@@ -48,10 +52,81 @@ static func add_bond(n: Dictionary, pts: int) -> int:
 	var before := bond_level(n)
 	n["bond"] = bond(n) + gain
 	n["bond_today"] = int(n["bond_today"]) + gain
+	_bond_level_news(n, before)
+	return gain
+
+
+static func _bond_level_news(n: Dictionary, before: int) -> void:
 	if bond_level(n) > before:
 		NpcWorld.news("%s now sees you as a %s!" % [n["name"], bond_name(n).to_lower()], Color("ff9ad5"), true)
 		Sfx.play("levelup")
+
+
+# ------------------------------------------------------------------ teamwork bond
+static func team_bond_left_today(n: Dictionary) -> int:
+	if int(n.get("team_bond_day", -1)) != int(Game.world.get("day", 1)):
+		return TEAM_BOND_PER_DAY
+	return maxi(0, TEAM_BOND_PER_DAY - int(n.get("team_bond_today", 0)))
+
+
+## Bond from fighting together, within its own daily limit. Returns the points actually gained.
+static func add_team_bond(n: Dictionary, pts: int) -> int:
+	var day := int(Game.world.get("day", 1))
+	if int(n.get("team_bond_day", -1)) != day:
+		n["team_bond_day"] = day
+		n["team_bond_today"] = 0
+	var gain := mini(mini(pts, team_bond_left_today(n)), BOND_MAX - bond(n))
+	if gain <= 0:
+		return 0
+	var before := bond_level(n)
+	n["bond"] = bond(n) + gain
+	n["team_bond_today"] = int(n["team_bond_today"]) + gain
+	_bond_level_news(n, before)
 	return gain
+
+
+## Party members fighting beside the hero right now: their actor is in this level and standing.
+static func present_members() -> Array:
+	var out := []
+	var lv = Game.level_node
+	for n in party_members():
+		var a = NpcWorld.actor_of(n)
+		if a != null and is_instance_valid(a) and not a.dead and lv != null and lv.is_ancestor_of(a):
+			out.append(n)
+	return out
+
+
+## A monster fell to the party (anyone in it). `mult` scales it like the kill's XP (trivial foes count less).
+static func on_party_kill(tier: String, mult: float = 1.0) -> void:
+	if Game.test_run:
+		return
+	var per := float(TEAM_KILL_BOND.get(tier, TEAM_KILL_BOND["normal"])) * clampf(mult, 0.0, 1.5)
+	for n in present_members():
+		var acc := float(n.get("team_bond_acc", 0.0)) + per
+		var whole := int(acc)
+		n["team_bond_acc"] = acc - whole
+		if whole <= 0:
+			continue
+		var got := add_team_bond(n, whole)
+		var a = NpcWorld.actor_of(n)
+		if got > 0 and a != null and Game.level_node:
+			Game.level_node.float_text(a.global_position + Vector2(0, -42), "+%d bond" % got, Color("ff9ad5"), 0.8)
+
+
+## The party cleared a dungeon together. Returns [[record, points], ...] for those who gained.
+static func on_dungeon_cleared(rank: int) -> Array:
+	if Game.test_run:
+		return []
+	var out := []
+	var names: PackedStringArray = []
+	for n in present_members():
+		var got := add_team_bond(n, TEAM_DUNGEON_BOND + rank / 25)
+		if got > 0:
+			out.append([n, got])
+			names.append("%s +%d" % [n["name"], got])
+	if not names.is_empty():
+		Game.toast("Clearing it together brought you closer — bond %s." % ", ".join(names), Color("ff9ad5"))
+	return out
 
 
 ## Gold that buys one bond point with this adventurer.

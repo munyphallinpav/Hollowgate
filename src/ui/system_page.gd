@@ -26,15 +26,16 @@ func _ready() -> void:
 			Game.main.end_test_run("exit"), 160))
 	h.add_child(UI.button("Return to Title", func():
 		Dialogs.confirm(Game.main.menu_layer, "Return to title", "Your progress will be saved. Return to the title screen?", func(): Game.main.go_title(true)), 180))
-	h.add_child(UI.button("Quit Game", func():
-		Dialogs.confirm(Game.main.menu_layer, "Quit", "Save and quit the game?", func():
-			if not Game.test_run:
-				Game.save_game(true)
-			get_tree().quit(), "Quit"), 160))
+	if not OS.has_feature("web"):  # a browser tab can't quit itself
+		h.add_child(UI.button("Quit Game", func():
+			Dialogs.confirm(Game.main.menu_layer, "Quit", "Save and quit the game?", func():
+				if not Game.test_run:
+					Game.save_game(true)
+				get_tree().quit(), "Quit"), 160))
 	add_child(UI.sep())
 	add_child(UI.label("Load a save slot", 16, Color("ffe9a8")))
 	slots_box = UI.vbox(6)
-	add_child(slots_box)
+	add_child(UI.scroll(slots_box, Vector2(900, 210)))
 	add_child(UI.sep())
 	add_child(UI.label("How to play", 16, Color("ffe9a8")))
 	var keys := "Move [b]%s%s%s%s[/b] • Attack [b]%s[/b] (hold) • Dash [b]%s[/b] (immune while dashing) • Skills [b]%s %s %s %s[/b] • Consumables [b]%s %s %s %s[/b]\nInteract [b]%s[/b] • Teleport to town [b]%s[/b] • Inventory [b]%s[/b] • Character [b]%s[/b] • Skills [b]%s[/b] • Quests [b]%s[/b] • Map [b]%s[/b] • Dungeon editor [b]%s[/b] • Fullscreen [b]%s[/b] / [b]Alt+Enter[/b]" % [
